@@ -7,6 +7,8 @@ public sealed class BackupStore
 {
     private sealed class ValueBackup
     {
+        public string Format { get; set; } = "MogleyTweaks.RegistryBackup";
+        public int Version { get; set; } = 1;
         public string Hive { get; set; } = "";
         public string KeyPath { get; set; } = "";
         public string ValueName { get; set; } = "";
@@ -42,9 +44,12 @@ public sealed class BackupStore
                 backup.Data = Encode(data, kind);
             }
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new IOException("The current registry value could not be read, so a safe backup could not be created.", ex);
+        }
 
-        var file = Path.Combine(Folder, $"value-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.json");
+        var file = Path.Combine(Folder, $"value-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.regbu");
         File.WriteAllText(file, JsonSerializer.Serialize(backup, new JsonSerializerOptions { WriteIndented = true }));
         return file;
     }
@@ -53,6 +58,16 @@ public sealed class BackupStore
     {
         var backup = JsonSerializer.Deserialize<ValueBackup>(File.ReadAllText(file))
             ?? throw new InvalidDataException("The backup file is invalid.");
+        // Files created before .regbu used the same JSON payload without these fields.
+        if (!string.IsNullOrEmpty(backup.Format) &&
+            !backup.Format.Equals("MogleyTweaks.RegistryBackup", StringComparison.Ordinal))
+            throw new InvalidDataException("This is not a Mogley registry backup.");
+        if (backup.Version is < 1 or > 1)
+            throw new InvalidDataException("This registry backup version is not supported.");
+        if (string.IsNullOrWhiteSpace(backup.Hive) || backup.KeyPath.Contains('/') ||
+            backup.KeyPath.Contains("..", StringComparison.Ordinal) ||
+            backup.ValueName.Contains('\\') || backup.ValueName.Contains('/'))
+            throw new InvalidDataException("The backup contains an invalid registry location.");
         var hive = RegistryStore.ParseHive(backup.Hive);
 
         if (!backup.Existed)
