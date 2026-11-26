@@ -38,15 +38,17 @@ public sealed class HomeForm : Form
         });
         root.Controls.Add(warning, 0, 2);
 
-        var cards = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(0, 0, 0, 12) };
+        var cards = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 3, Padding = new Padding(0, 0, 0, 12) };
         cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33f));
+        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33f));
+        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 33.34f));
         cards.Controls.Add(Card("Quick Tweaks", "50+ searchable switches for appearance, Explorer, Start, taskbar, privacy, gaming and more.", "Open Quick Tweaks", dark, (_, _) => OpenQuickTweaks()), 0, 0);
         cards.Controls.Add(Card("Registry Packs", "Import a .regimp pack, review every change, and apply it.", "Import .regimp", dark, (_, _) => ImportPack()), 1, 0);
         cards.Controls.Add(Card("Advanced Registry Editor", "Browse and edit registry keys and values manually.", "Open Editor", dark, (_, _) => OpenAdvanced()), 0, 1);
         cards.Controls.Add(Card("Backups", "View the registry value backups created by this app.", "Open Backup Folder", dark, (_, _) => OpenBackups()), 1, 1);
+        cards.Controls.Add(Card("System Tools", "Inspect startup entries, installed apps, running processes, drives and network adapters. Open built-in Windows management tools.", "Open System Tools", dark, (_, _) => OpenSystemTools()), 0, 2);
         root.Controls.Add(cards, 0, 3);
 
         var footer = new Label { Text = "Windows 10 / 11  •  Local changes only  •  No account required", AutoSize = true, ForeColor = dark ? Color.FromArgb(145, 145, 158) : Color.FromArgb(125, 126, 136), Margin = new Padding(0, 10, 0, 0) };
@@ -67,6 +69,12 @@ public sealed class HomeForm : Form
         panel.Controls.Add(button);
         panel.Resize += (_, _) => button.Top = Math.Max(105, panel.ClientSize.Height - button.Height - 18);
         return panel;
+    }
+
+    private void OpenSystemTools()
+    {
+        using var form = new SystemToolsForm();
+        form.ShowDialog(this);
     }
 
     private void OpenQuickTweaks()
