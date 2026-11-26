@@ -90,7 +90,7 @@ public sealed class TweaksForm : Form
         string? previousGroup = null;
         foreach (var tweak in _tweaks)
         {
-            if (!IsWindows11() && tweak.Name is "TaskbarAl" or "TaskbarDa")
+            if (!IsWindows11() && (tweak.Name is "TaskbarAl" or "TaskbarDa"))
                 continue;
 
             if (tweak.Group != previousGroup)
@@ -211,7 +211,7 @@ public sealed class TweaksForm : Form
     {
         foreach (var tweak in _tweaks)
         {
-            if (tweak.Name == "TaskbarAl" && !IsWindows11()) continue;
+            if (tweak.Name is "TaskbarAl" or "TaskbarDa" && !IsWindows11()) continue;
             var current = ReadDword(tweak.Path, tweak.Name, tweak.DisabledValue);
             _checks[tweak].Checked = current == tweak.EnabledValue;
         }
@@ -234,7 +234,7 @@ public sealed class TweaksForm : Form
 
     private void ApplyOne(Tweak tweak, bool enabled)
     {
-        if (tweak.Name == "TaskbarAl" && !IsWindows11())
+        if (tweak.Name is "TaskbarAl" or "TaskbarDa" && !IsWindows11())
         {
             MessageBox.Show(this, "This option is only available on Windows 11.", "Not supported",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
