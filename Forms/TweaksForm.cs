@@ -170,7 +170,7 @@ public sealed class TweaksForm : Form
 
         var accentGroup = new FlowLayoutPanel
         {
-            Width = 700, Height = 74, AutoSize = false,
+            Tag = "ACCENT COLOR", Width = 700, Height = 74, AutoSize = false,
             FlowDirection = FlowDirection.LeftToRight, WrapContents = false,
             Padding = new Padding(12, 10, 12, 8), Margin = new Padding(0, 8, 0, 12),
             BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White
@@ -247,17 +247,15 @@ public sealed class TweaksForm : Form
     private static void FilterTweaks(FlowLayoutPanel list, string query)
     {
         query = query.Trim();
-        string? currentGroup = null;
         var groupHasMatch = false;
         var groupHeader = (Control?)null;
 
         foreach (Control control in list.Controls)
         {
-            if (control.Tag is string group)
+            if (control is Label && control.Tag is string group)
             {
                 if (groupHeader is not null)
                     groupHeader.Visible = query.Length == 0 || groupHasMatch;
-                currentGroup = group;
                 groupHeader = control;
                 groupHasMatch = false;
                 continue;
