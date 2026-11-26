@@ -71,7 +71,9 @@ public sealed class SystemToolsForm : Form
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         var header = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, WrapContents = true, Padding = new Padding(2) };
-        header.Controls.Add(new Label { Text = note, AutoSize = true, MaximumSize = new Size(790, 0), Margin = new Padding(0, 5, 12, 8), ForeColor = _dark ? Color.Gainsboro : Color.DimGray });
+        var noteLabel = new Label { Text = note, AutoSize = true, MaximumSize = new Size(790, 0), Margin = new Padding(0, 5, 12, 8), ForeColor = _dark ? Color.Gainsboro : Color.DimGray };
+        header.Controls.Add(noteLabel);
+        panel.SizeChanged += (_, _) => noteLabel.MaximumSize = new Size(Math.Max(260, panel.ClientSize.Width - 150), 0);
         var target = ReferenceEquals(list, _startup) ? "ms-settings:startupapps"
             : ReferenceEquals(list, _apps) ? "ms-settings:appsfeatures"
             : ReferenceEquals(list, _processes) ? "taskmgr.exe"
