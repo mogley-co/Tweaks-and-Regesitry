@@ -104,8 +104,8 @@ public sealed class TweaksForm : Form
 
         Text = "Quick Tweaks";
         StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(790, 760);
-        MinimumSize = new Size(680, 620);
+        ClientSize = new Size(900, 760);
+        MinimumSize = new Size(700, 560);
         Font = new Font("Segoe UI", 9.5f);
         BackColor = _dark ? Color.FromArgb(25, 25, 29) : Color.FromArgb(245, 246, 249);
         ForeColor = _dark ? Color.FromArgb(239, 239, 244) : Color.FromArgb(35, 35, 42);
