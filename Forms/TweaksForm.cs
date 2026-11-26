@@ -268,6 +268,7 @@ public sealed class TweaksForm : Form
     {
         using var dialog = new ColorDialog { Color = _accent, FullOpen = true, AnyColor = true };
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        _accent = dialog.Color;
         if (MessageBox.Show(this, "Apply this accent color to Windows?", "Apply accent color",
             MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             return;
