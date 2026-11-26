@@ -8,7 +8,7 @@ namespace MogleyTweaks.Forms;
 
 public sealed class SystemToolsForm : Form
 {
-    private readonly TabControl _tabs = new() { Dock = DockStyle.Fill };
+    private readonly TabControl _tabs = new() { Dock = DockStyle.Fill, Multiline = true, SizeMode = TabSizeMode.Fixed, ItemSize = new Size(112, 28) };
     private readonly Label _summary = new() { Dock = DockStyle.Fill, AutoSize = false, Padding = new Padding(18) };
     private readonly ListView _startup = MakeList(("Name", 190), ("Command", 570), ("Source", 170));
     private readonly ListView _apps = MakeList(("Application", 260), ("Version", 110), ("Publisher", 190), ("Install location", 330));
@@ -21,8 +21,8 @@ public sealed class SystemToolsForm : Form
     {
         Text = "Tweaks and Registry — System Tools";
         StartPosition = FormStartPosition.CenterParent;
-        Size = new Size(1100, 760);
-        MinimumSize = new Size(820, 560);
+        Size = new Size(1040, 720);
+        MinimumSize = new Size(720, 500);
         Font = new Font("Segoe UI", 9.5f);
         BackColor = _dark ? Color.FromArgb(27, 27, 31) : Color.FromArgb(247, 247, 249);
         ForeColor = _dark ? Color.FromArgb(238, 238, 242) : Color.FromArgb(34, 34, 38);
@@ -54,11 +54,13 @@ public sealed class SystemToolsForm : Form
 
     private Control BuildOverview()
     {
-        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Padding = new Padding(16) };
+        var panel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Padding = new Padding(14) };
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        var heading = new Label { Text = "Your Windows system", AutoSize = true, Font = new Font("Segoe UI Semibold", 19, FontStyle.Bold), Margin = new Padding(0, 0, 0, 12) };
+        var heading = new Label { Text = "Your Windows system", AutoSize = true, Font = new Font("Segoe UI Semibold", 18, FontStyle.Bold), Margin = new Padding(0, 0, 0, 10) };
         panel.Controls.Add(heading, 0, 0);
+        _summary.Font = new Font("Segoe UI", 10f);
+        _summary.AutoEllipsis = false;
         panel.Controls.Add(_summary, 0, 1);
         return panel;
     }
@@ -83,7 +85,7 @@ public sealed class SystemToolsForm : Form
 
     private Control BuildToolsPage()
     {
-        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(12), AutoScroll = true };
+        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(10), AutoScroll = true, WrapContents = true };
         var tools = new (string Name, string Target, string Description)[]
         {
             ("Task Manager", "taskmgr.exe", "View and manage running applications and processes."),
@@ -101,16 +103,23 @@ public sealed class SystemToolsForm : Form
         };
         foreach (var tool in tools)
         {
-            var card = new Panel { Width = 300, Height = 105, Margin = new Padding(7), Padding = new Padding(10), BackColor = _dark ? Color.FromArgb(42, 42, 48) : Color.White, BorderStyle = BorderStyle.FixedSingle };
-            var title = new Label { Text = tool.Name, AutoSize = true, Font = new Font("Segoe UI Semibold", 11, FontStyle.Bold), Location = new Point(10, 8) };
+            var card = new Panel { Width = 300, Height = 118, Margin = new Padding(7), Padding = new Padding(10), BackColor = _dark ? Color.FromArgb(42, 42, 48) : Color.White, BorderStyle = BorderStyle.FixedSingle };
+            var title = new Label { Text = tool.Name, AutoSize = true, Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Location = new Point(10, 8) };
             var description = new Label { Text = tool.Description, AutoSize = true, MaximumSize = new Size(270, 0), ForeColor = _dark ? Color.Silver : Color.DimGray, Location = new Point(10, 34) };
             var open = MakeButton("Open", (_, _) => OpenTool(tool.Target));
-            open.Location = new Point(210, 65);
-            open.Width = 75;
+            open.Width = 76;
             card.Controls.Add(title);
             card.Controls.Add(description);
             card.Controls.Add(open);
+            void LayoutCard()
+            {
+                card.Width = Math.Max(230, Math.Min(360, (panel.ClientSize.Width - 52) / 2));
+                description.MaximumSize = new Size(Math.Max(190, card.ClientSize.Width - 24), 0);
+                open.Location = new Point(card.ClientSize.Width - open.Width - 10, card.ClientSize.Height - open.Height - 8);
+            }
+            card.Resize += (_, _) => LayoutCard();
             panel.Controls.Add(card);
+            LayoutCard();
         }
         return panel;
     }
@@ -302,8 +311,19 @@ public sealed class SystemToolsForm : Form
 
     private static ListView MakeList(params (string Name, int Width)[] columns)
     {
-        var list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, GridLines = true, MultiSelect = false, HideSelection = false };
+        var list = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, GridLines = true, MultiSelect = false, HideSelection = false, MinimumSize = new Size(0, 120) };
         foreach (var (name, width) in columns) list.Columns.Add(name, width);
+        void ResizeColumns()
+        {
+            if (list.Columns.Count == 0 || list.ClientSize.Width <= 0) return;
+            var weights = columns.Select(x => x.Width).ToArray();
+            var available = Math.Max(240, list.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 6);
+            var total = weights.Sum();
+            for (var i = 0; i < weights.Length; i++)
+                list.Columns[i].Width = Math.Max(55, (int)(available * (double)weights[i] / total));
+        }
+        list.Resize += (_, _) => ResizeColumns();
+        list.HandleCreated += (_, _) => ResizeColumns();
         return list;
     }
 
