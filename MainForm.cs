@@ -51,7 +51,7 @@ public sealed class MainForm : Form
 
         var menu = BuildMenu();
         var toolbar = BuildToolbar();
-        var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 340, FixedPanel = FixedPanel.Panel1 };
+        var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };\n        Shown += (_, _) => split.SplitterDistance = Math.Min(340, split.Width - split.Panel2MinSize);
         split.Panel1.Controls.Add(_tree);
         split.Panel2.Controls.Add(_grid);
 
