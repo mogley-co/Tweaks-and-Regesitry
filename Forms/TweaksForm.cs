@@ -78,7 +78,7 @@ public sealed class TweaksForm : Form
         new("PRIVACY", "Disable silently suggested app installs", "Stop Windows from silently installing suggested consumer apps where this setting is honored.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 0, 1),
         new("PRIVACY", "Disable preinstalled app suggestions", "Turn off Windows consumer app suggestion delivery.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 0, 1),
         new("PRIVACY", "Disable OEM app suggestions", "Turn off manufacturer app suggestions delivered through Windows.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "OemPreInstalledAppsEnabled", 0, 1),
-        new("PRIVACY", "Disable lock-screen tips", "Stop rotating Windows spotlight tips and suggestions on the lock screen.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "RotatingLockScreenOverlayEnabled", 0, 1),
+        new("PRIVACY", "Disable lock-screen overlay tips", "Hide tips and suggestion text displayed over the lock-screen background.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "RotatingLockScreenOverlayEnabled", 0, 1),
 
         // GAMING
         new("GAMING", "Enable Windows Game Mode", "Let Windows prioritize supported games while they are running.", @"Software\Microsoft\GameBar", "AutoGameModeEnabled", 1, 0),
@@ -113,8 +113,9 @@ public sealed class TweaksForm : Form
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill, Padding = new Padding(22, 18, 22, 14),
-            ColumnCount = 1, RowCount = 3
+            ColumnCount = 1, RowCount = 4
         };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -127,6 +128,24 @@ public sealed class TweaksForm : Form
             Margin = new Padding(0, 0, 0, 14)
         };
         root.Controls.Add(heading, 0, 0);
+
+        var searchBar = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill, AutoSize = true, FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false, Margin = new Padding(0, 0, 0, 8), Padding = new Padding(0, 0, 0, 2)
+        };
+        searchBar.Controls.Add(new Label
+        {
+            Text = "Find a tweak", AutoSize = true, Margin = new Padding(0, 8, 10, 0),
+            ForeColor = _dark ? Color.FromArgb(190, 190, 200) : Color.FromArgb(90, 90, 100)
+        });
+        var search = new TextBox
+        {
+            Width = 360, Height = 30, PlaceholderText = "Search by name, category or description...",
+            Margin = new Padding(0, 2, 0, 0)
+        };
+        searchBar.Controls.Add(search);
+        root.Controls.Add(searchBar, 0, 1);
 
         var list = new FlowLayoutPanel
         {
@@ -175,7 +194,8 @@ public sealed class TweaksForm : Form
         accentGroup.Controls.Add(_accentButton);
         list.Controls.Add(accentGroup);
 
-        root.Controls.Add(list, 0, 1);
+        root.Controls.Add(list, 0, 2);
+        search.TextChanged += (_, _) => FilterTweaks(list, search.Text);
 
         var footer = new TableLayoutPanel
         {
@@ -216,7 +236,7 @@ public sealed class TweaksForm : Form
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
         footer.Controls.Add(actions, 0, 2);
-        root.Controls.Add(footer, 0, 2);
+        root.Controls.Add(footer, 0, 3);
         Controls.Add(root);
 
         LoadCurrentValues();
@@ -224,9 +244,51 @@ public sealed class TweaksForm : Form
         UpdateAccentButton();
     }
 
+    private static void FilterTweaks(FlowLayoutPanel list, string query)
+    {
+        query = query.Trim();
+        string? currentGroup = null;
+        var groupHasMatch = false;
+        var groupHeader = (Control?)null;
+
+        foreach (Control control in list.Controls)
+        {
+            if (control.Tag is string group)
+            {
+                if (groupHeader is not null)
+                    groupHeader.Visible = query.Length == 0 || groupHasMatch;
+                currentGroup = group;
+                groupHeader = control;
+                groupHasMatch = false;
+                continue;
+            }
+
+            if (control.Tag is Tweak tweak)
+            {
+                var matches = query.Length == 0 ||
+                    tweak.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    tweak.Group.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    tweak.Description.Contains(query, StringComparison.OrdinalIgnoreCase);
+                control.Visible = matches;
+                if (matches) groupHasMatch = true;
+            }
+            else if (control.Tag is string label)
+            {
+                control.Visible = query.Length == 0 || label.Contains(query, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                control.Visible = query.Length == 0;
+            }
+        }
+
+        if (groupHeader is not null)
+            groupHeader.Visible = query.Length == 0 || groupHasMatch;
+    }
+
     private Control MakeGroupHeader(string title) => new Label
     {
-        Text = title, AutoSize = true,
+        Text = title, Tag = title, AutoSize = true,
         Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
         ForeColor = _dark ? Color.FromArgb(174, 157, 232) : Color.FromArgb(105, 78, 170),
         Margin = new Padding(2, 12, 0, 6)
@@ -236,7 +298,7 @@ public sealed class TweaksForm : Form
     {
         var row = new Panel
         {
-            Width = 700, Height = 66, Margin = new Padding(0, 0, 0, 7),
+            Tag = tweak, Width = 700, Height = 66, Margin = new Padding(0, 0, 0, 7),
             BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White
         };
         var check = new CheckBox
