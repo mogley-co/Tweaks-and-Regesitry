@@ -138,6 +138,52 @@ public static class RegistryPackStore
             new JsonSerializerOptions { WriteIndented = true }));
     }
 
+
+    public static void ExportMany(string path, string name, string description,
+        IEnumerable<(string KeyPath, RegistryValueItem Value)> source)
+    {
+        var items = source.ToList();
+        if (items.Count is < 1 or > 200)
+            throw new InvalidOperationException("A pack must contain between 1 and 200 values.");
+
+        var entries = new List<EntryModel>();
+        foreach (var item in items)
+        {
+            var keyPath = (item.KeyPath ?? "").Trim('\\');
+            if (!keyPath.Equals("Software", StringComparison.OrdinalIgnoreCase) &&
+                !keyPath.StartsWith("Software\\", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Quick Tweaks packs can only contain HKCU\\Software values.");
+            if (keyPath.Length > 240 || keyPath.Contains("..", StringComparison.Ordinal) ||
+                keyPath.Contains('/') || IsBlocked(keyPath))
+                throw new InvalidOperationException("A selected setting uses a restricted registry path.");
+            if (item.Value.Name.Length > 160 || item.Value.Name.Contains('\\') ||
+                item.Value.Name.Contains('/'))
+                throw new InvalidOperationException("A registry value name is invalid.");
+            if (item.Value.Kind is not (RegistryValueKind.String or RegistryValueKind.ExpandString or
+                RegistryValueKind.DWord or RegistryValueKind.QWord or RegistryValueKind.Binary or
+                RegistryValueKind.MultiString))
+                throw new InvalidOperationException("A selected setting has an unsupported registry value type.");
+
+            entries.Add(new EntryModel
+            {
+                Hive = "HKEY_CURRENT_USER",
+                Key = keyPath,
+                Name = item.Value.Name,
+                Kind = item.Value.Kind.ToString(),
+                Data = ToJson(item.Value.Data, item.Value.Kind)
+            });
+        }
+
+        var model = new FileModel
+        {
+            Name = Clean(name, 80),
+            Description = Clean(description, 300),
+            Entries = entries
+        };
+        File.WriteAllText(path, JsonSerializer.Serialize(model,
+            new JsonSerializerOptions { WriteIndented = true }));
+    }
+
     public static object GetValue(RegistryPackEntry entry)
     {
         var kind = Enum.Parse<RegistryValueKind>(entry.Kind, true);
