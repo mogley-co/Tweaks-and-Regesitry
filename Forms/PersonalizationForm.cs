@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using MogleyTweaks.Services;
@@ -72,6 +73,9 @@ public sealed class PersonalizationForm : Form
         cards.Controls.Add(MakeCard("Right-click menu",
             "Remove only the “Open Terminal here” entries created by this app. Other context-menu entries are not touched.",
             "Remove menu item", RemoveContextMenu));
+        cards.Controls.Add(MakeCard("Windows desktop icons",
+            "Open Windows Themes settings to show or hide This PC, Recycle Bin, Network and your user folder, and customize their system icons.",
+            "Open desktop icon settings", OpenDesktopIconSettings));
         root.Controls.Add(cards, 0, 2);
 
         _status.ForeColor = _dark ? Color.FromArgb(180, 180, 190) : Color.FromArgb(90, 90, 100);
@@ -111,6 +115,19 @@ public sealed class PersonalizationForm : Form
         panel.Controls.Add(body);
         panel.Controls.Add(button);
         return panel;
+    }
+
+    private void OpenDesktopIconSettings(object? sender, EventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("ms-settings:themes") { UseShellExecute = true });
+            _status.Text = "Opened Windows Themes settings. Select Desktop icon settings there.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Could not open Themes settings", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void ChooseWallpaper(object? sender, EventArgs e)
