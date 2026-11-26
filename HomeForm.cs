@@ -10,7 +10,7 @@ public sealed class HomeForm : Form
 
     public HomeForm()
     {
-        Text = "Mogley Tweaks";
+        Text = "Tweaks and Registry";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(760, 600);
         Size = new Size(920, 700);
@@ -26,7 +26,7 @@ public sealed class HomeForm : Form
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        var title = new Label { Text = "Mogley Tweaks", AutoSize = true, Font = new Font("Segoe UI Semibold", 25, FontStyle.Bold), ForeColor = dark ? Color.FromArgb(239, 235, 255) : Color.FromArgb(40, 35, 70), Margin = new Padding(0, 0, 0, 2) };
+        var title = new Label { Text = "Tweaks and Registry", AutoSize = true, Font = new Font("Segoe UI Semibold", 25, FontStyle.Bold), ForeColor = dark ? Color.FromArgb(239, 235, 255) : Color.FromArgb(40, 35, 70), Margin = new Padding(0, 0, 0, 2) };
         var subtitle = new Label { Text = "Make Windows feel more like yours.", AutoSize = true, ForeColor = dark ? Color.FromArgb(165, 165, 177) : Color.FromArgb(100, 101, 112), Margin = new Padding(2, 0, 0, 20) };
         root.Controls.Add(title, 0, 0);
         root.Controls.Add(subtitle, 0, 1);
