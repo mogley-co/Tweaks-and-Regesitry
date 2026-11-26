@@ -113,8 +113,9 @@ public sealed class TweaksForm : Form
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill, Padding = new Padding(22, 18, 22, 14),
-            ColumnCount = 1, RowCount = 4
+            ColumnCount = 1, RowCount = 5
         };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -219,7 +220,7 @@ public sealed class TweaksForm : Form
         list.SizeChanged += (_, _) => ResizeRows();
         ResizeRows();
 
-        root.Controls.Add(list, 0, 2);
+        root.Controls.Add(list, 0, 3);
         search.TextChanged += (_, _) => FilterTweaks(list, search.Text);
 
         var footer = new TableLayoutPanel
@@ -256,16 +257,24 @@ public sealed class TweaksForm : Form
         };
         export.FlatAppearance.BorderSize = 0;
         export.Click += ExportCurrentSetup;
-        actions.Controls.Add(applyAll);
-        actions.Controls.Add(export);
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
         footer.Controls.Add(actions, 0, 2);
         footer.SizeChanged += (_, _) => warning.MaximumSize = new Size(Math.Max(300, footer.ClientSize.Width - 8), 0);
-        root.Controls.Add(footer, 0, 3);
+        root.Controls.Add(actions, 0, 2);
+        root.Controls.Add(footer, 0, 4);
         Controls.Add(root);
 
         LoadCurrentValues();
+        foreach (var pair in _checks)
+        {
+            pair.Value.Tag = pair.Value.Checked;
+            pair.Value.CheckedChanged += (_, _) =>
+            {
+                var changed = pair.Value.Tag is bool original && original != pair.Value.Checked;
+                _status.Text = changed ? $"{pair.Key.Title} has an unapplied change." : "No pending changes for this setting.";
+            };
+        }
         ApplyThemeTo(this);
         UpdateAccentButton();
     }
@@ -412,6 +421,7 @@ public sealed class TweaksForm : Form
                 SetDword(tweak.Path, tweak.Name, enabled ? tweak.EnabledValue : tweak.DisabledValue);
             }
 
+            _checks[tweak].Tag = enabled;
             _status.Text = $"Applied: {tweak.Title}";
         }
         catch (Exception ex)
@@ -429,6 +439,8 @@ public sealed class TweaksForm : Form
         foreach (var tweak in _tweaks)
         {
             if (!IsSupported(tweak))
+                continue;
+            if (_checks[tweak].Tag is bool original && original == _checks[tweak].Checked)
                 continue;
 
             var target = _checks[tweak].Checked ? tweak.EnabledValue : tweak.DisabledValue;
@@ -476,6 +488,8 @@ public sealed class TweaksForm : Form
                 applied++;
             }
 
+            foreach (var tweak in _tweaks)
+                _checks[tweak].Tag = _checks[tweak].Checked;
             _status.Text = $"Applied {applied} registry value change(s).";
             MessageBox.Show(this,
                 $"Applied {applied} registry value change(s).\nA .regbu backup was saved for each changed value.",
