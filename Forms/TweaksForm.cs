@@ -36,11 +36,16 @@ public sealed class TweaksForm : Form
         new("FILE EXPLORER", "Show image and video thumbnails", "Show previews instead of generic file icons.", ExplorerAdvanced, "IconsOnly", 0, 1),
         new("FILE EXPLORER", "Show drive letters first", "Place drive letters before drive names in This PC.", ExplorerAdvanced, "ShowDriveLettersFirst", 4, 0),
         new("FILE EXPLORER", "Show sync provider notifications", "Allow cloud storage apps to show sync messages in Explorer.", ExplorerAdvanced, "ShowSyncProviderNotifications", 1, 0),
-        new("START MENU", "Show recently opened files", "Allow recent files to appear in Start and jump lists.", ExplorerAdvanced, "Start_TrackDocs", 1, 0),
-        new("START MENU", "Show frequently used apps", "Allow Windows to track apps for the Start menu list.", ExplorerAdvanced, "Start_TrackProgs", 1, 0),
+        new("FILE EXPLORER", "Ask before deleting files", "Show a confirmation before sending a file to the Recycle Bin.", ExplorerAdvanced, "ConfirmFileDelete", 1, 0),
+        new("FILE EXPLORER", "Use check boxes to select items", "Show selection check boxes beside files and folders.", ExplorerAdvanced, "AutoCheckSelect", 1, 0),
+        new("FILE EXPLORER", "Open folder windows in separate processes", "Improves isolation, but can use more memory.", ExplorerAdvanced, "SeparateProcess", 1, 0),
+        new("FILE EXPLORER HOME", "Show recently used files", "Show recent files in File Explorer Home / Quick Access.", ExplorerAdvanced, "ShowRecent", 1, 0),
+        new("FILE EXPLORER HOME", "Show frequently used folders", "Show frequently visited folders in File Explorer Home.", ExplorerAdvanced, "ShowFrequent", 1, 0),
         new("TASKBAR", "Show seconds in the clock", "Display hours, minutes and seconds on the taskbar clock.", ExplorerAdvanced, "ShowSecondsInSystemClock", 1, 0),
         new("TASKBAR", "Align taskbar icons to the left", "Move taskbar icons to the left side (Windows 11).", ExplorerAdvanced, "TaskbarAl", 0, 1),
         new("TASKBAR", "Enable taskbar animations", "Use Windows animations for taskbar interactions.", ExplorerAdvanced, "TaskbarAnimations", 1, 0),
+        new("TASKBAR", "Show Task View button", "Show the desktop and open-window overview button.", ExplorerAdvanced, "ShowTaskViewButton", 1, 0),
+        new("TASKBAR", "Show Widgets button", "Show the Widgets entry point on the Windows 11 taskbar.", ExplorerAdvanced, "TaskbarDa", 1, 0),
         new("NOTIFICATION AREA", "Show all tray icons", "Keep notification-area icons visible instead of hiding some.", Explorer, "EnableAutoTray", 0, 1)
     };
 
@@ -85,7 +90,7 @@ public sealed class TweaksForm : Form
         string? previousGroup = null;
         foreach (var tweak in _tweaks)
         {
-            if (tweak.Group == "TASKBAR" && !IsWindows11() && tweak.Name == "TaskbarAl")
+            if (!IsWindows11() && tweak.Name is "TaskbarAl" or "TaskbarDa")
                 continue;
 
             if (tweak.Group != previousGroup)
@@ -126,7 +131,7 @@ public sealed class TweaksForm : Form
 
         var footer = new TableLayoutPanel
         {
-            Dock = DockStyle.Bottom, AutoSize = true, ColumnCount = 1, RowCount = 2,
+            Dock = DockStyle.Bottom, AutoSize = true, ColumnCount = 1, RowCount = 3,
             Padding = new Padding(0, 10, 0, 0)
         };
         var warning = new Label
@@ -137,8 +142,17 @@ public sealed class TweaksForm : Form
             Margin = new Padding(0, 0, 0, 6)
         };
         _status.ForeColor = _dark ? Color.FromArgb(180, 180, 190) : Color.FromArgb(90, 90, 100);
+        var export = new Button
+        {
+            Text = "Export current setup (.regimp)", AutoSize = true, Height = 34,
+            BackColor = Color.FromArgb(74, 112, 160), ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 8, 0, 0)
+        };
+        export.FlatAppearance.BorderSize = 0;
+        export.Click += ExportCurrentSetup;
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
+        footer.Controls.Add(export, 0, 2);
         root.Controls.Add(footer, 0, 2);
         Controls.Add(root);
 
@@ -293,6 +307,60 @@ public sealed class TweaksForm : Form
         _accentButton.BackColor = _accent;
         _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
         _accentButton.Text = $"Apply #{_accent.R:X2}{_accent.G:X2}{_accent.B:X2}";
+    }
+
+
+    private void ExportCurrentSetup(object? sender, EventArgs e)
+    {
+        using var dialog = new SaveFileDialog
+        {
+            Title = "Export Quick Tweaks setup",
+            Filter = "Mogley Registry Pack (*.regimp)|*.regimp",
+            DefaultExt = "regimp",
+            AddExtension = true,
+            FileName = "Mogley-QuickTweaks.regimp",
+            OverwritePrompt = true
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        try
+        {
+            var namesByPath = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var tweak in _tweaks)
+            {
+                if (!namesByPath.TryGetValue(tweak.Path, out var names))
+                    namesByPath[tweak.Path] = names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                names.Add(tweak.Name);
+            }
+
+            // Include both halves of the dark-mode preference and the chosen accent color.
+            namesByPath[Personalize].Add("SystemUsesLightTheme");
+            namesByPath[Dwm].Add("ColorizationColor");
+
+            var values = new List<(string KeyPath, RegistryValueItem Value)>();
+            foreach (var group in namesByPath)
+            {
+                foreach (var value in _registry.GetValues(RegistryHive.CurrentUser, group.Key))
+                {
+                    if (group.Value.Contains(value.Name))
+                        values.Add((group.Key, value));
+                }
+            }
+
+            RegistryPackStore.ExportMany(dialog.FileName, "Quick Tweaks setup",
+                "Exported Windows customization settings from Mogley Tweaks.", values);
+
+            _status.Text = $"Exported {values.Count} registry value(s).";
+            MessageBox.Show(this,
+                $"Your Quick Tweaks setup was exported.\\n\\n{values.Count} value(s) saved to:\\n{dialog.FileName}\\n\\nReview the pack before importing it on another PC.",
+                "Export complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Could not export pack",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _status.Text = "Export failed.";
+        }
     }
 
     private void ApplyThemeTo(Control parent)
