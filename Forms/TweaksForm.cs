@@ -299,7 +299,7 @@ public sealed class TweaksForm : Form
     {
         foreach (Control control in parent.Controls)
         {
-            if (control is Panel or FlowLayoutPanel)
+            if (control is Panel)
                 control.BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White;
             if (control is not Button && control is not CheckBox && control is not Label)
                 control.ForeColor = _dark ? Color.FromArgb(238, 238, 243) : Color.FromArgb(35, 35, 42);
