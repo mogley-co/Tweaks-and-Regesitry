@@ -40,7 +40,7 @@ public sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "Mogley Tweaks & Registry";
+        Text = "Tweaks and Registry — Registry Editor";
         StartPosition = FormStartPosition.CenterScreen;
         Width = 1180; Height = 760; MinimumSize = new Size(850, 560);
         _colors = ThemeService.IsDark() ? AppColors.Dark : AppColors.Light;
