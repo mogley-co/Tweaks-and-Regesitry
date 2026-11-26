@@ -14,7 +14,7 @@ The app opens to a beginner-friendly home screen:
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
 - **System Tools** — inspect Windows system information, startup entries, installed applications, running processes, local drive capacity, and network adapters. Each inventory has a direct link to the relevant Windows management page; the Windows Tools tab launches Task Manager, Services, Device Manager, Disk Management, Event Viewer, System Information, Resource Monitor, and common Settings pages.
-- **Personalization** — set a desktop wallpaper, assign a custom `.ico` file to a folder, and add or remove an “Open Terminal here” File Explorer context-menu item. Wallpaper and registry changes are backed up; an existing folder `desktop.ini` is copied before it is changed.
+- **Personalization** — set a desktop wallpaper, assign a custom `.ico` file to a folder, open Windows desktop icon settings for This PC/Recycle Bin/Network, and add or remove an “Open Terminal here” File Explorer context-menu item. Wallpaper and registry changes are backed up; an existing folder `desktop.ini` is copied before it is changed.
 
 ## System Tools
 
