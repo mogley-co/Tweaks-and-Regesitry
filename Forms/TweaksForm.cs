@@ -228,6 +228,8 @@ public sealed class TweaksForm : Form
             Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 1, RowCount = 2,
             Padding = new Padding(0, 10, 0, 0)
         };
+        footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         var warning = new Label
         {
             Text = "Each Apply button changes only that one setting. A backup is saved before its registry value changes.",
@@ -575,10 +577,17 @@ public sealed class TweaksForm : Form
             var values = new List<(string KeyPath, RegistryValueItem Value)>();
             foreach (var group in namesByPath)
             {
-                foreach (var value in _registry.GetValues(RegistryHive.CurrentUser, group.Key))
+                try
                 {
-                    if (group.Value.Contains(value.Name))
-                        values.Add((group.Key, value));
+                    foreach (var value in _registry.GetValues(RegistryHive.CurrentUser, group.Key))
+                    {
+                        if (group.Value.Contains(value.Name))
+                            values.Add((group.Key, value));
+                    }
+                }
+                catch (IOException)
+                {
+                    // A Windows build may not have created every optional settings key yet.
                 }
             }
 
