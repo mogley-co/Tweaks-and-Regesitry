@@ -1,6 +1,6 @@
 # Tweaks and Registry
 
-A lightweight Windows 10/11 customization and registry utility built with C# WinForms.
+A lightweight Windows 10/11 customization, system information, and registry utility built with C# WinForms.
 
 **Status:** Early development  
 **Target:** Windows 10 and Windows 11 (x64)
@@ -13,6 +13,19 @@ The app opens to a beginner-friendly home screen:
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
+- **System Tools** — inspect Windows system information, startup entries, installed applications, running processes, local drive capacity, and network adapters. Each inventory has a direct link to the relevant Windows management page; the Windows Tools tab launches Task Manager, Services, Device Manager, Disk Management, Event Viewer, System Information, Resource Monitor, and common Settings pages.
+
+## System Tools
+
+System Tools provides read-only inventories and delegates system changes to Windows itself:
+
+- Startup inventory reads the standard per-user and machine Run keys and Startup folders. Use Windows Startup Apps to enable or disable entries.
+- Installed-app inventory reads standard uninstall registry entries. Use Windows Apps settings or Programs and Features to uninstall software.
+- Process inventory is a snapshot; use Task Manager for process management.
+- Storage and network pages report drive capacity and adapter/IP information without changing configuration.
+- The Windows Tools tab opens built-in Windows consoles and Settings pages. Availability depends on the Windows edition and installed components.
+
+The app intentionally does not silently terminate processes, disable services, uninstall applications, or delete files. Those actions can cause data loss or break Windows; use the built-in management tools with their own confirmation prompts.
 
 ## Registry packs (.regimp)
 
