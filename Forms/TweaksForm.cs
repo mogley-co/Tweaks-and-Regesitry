@@ -225,7 +225,7 @@ public sealed class TweaksForm : Form
 
         var footer = new TableLayoutPanel
         {
-            Dock = DockStyle.Bottom, AutoSize = true, ColumnCount = 1, RowCount = 3,
+            Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 1, RowCount = 2,
             Padding = new Padding(0, 10, 0, 0)
         };
         var warning = new Label
@@ -257,9 +257,10 @@ public sealed class TweaksForm : Form
         };
         export.FlatAppearance.BorderSize = 0;
         export.Click += ExportCurrentSetup;
+        actions.Controls.Add(applyAll);
+        actions.Controls.Add(export);
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
-        footer.Controls.Add(actions, 0, 2);
         footer.SizeChanged += (_, _) => warning.MaximumSize = new Size(Math.Max(300, footer.ClientSize.Width - 8), 0);
         root.Controls.Add(actions, 0, 2);
         root.Controls.Add(footer, 0, 4);
