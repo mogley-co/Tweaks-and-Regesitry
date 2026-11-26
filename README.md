@@ -9,7 +9,7 @@ A lightweight Windows 10/11 customization and registry utility built with C# Win
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area options. It also exports the managed current settings as a shareable `.regimp` pack.
+- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. It also exports the managed current settings as a shareable `.regimp` pack.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
