@@ -362,7 +362,7 @@ public sealed class TweaksForm : Form
     {
         if (!IsSupported(tweak))
         {
-            MessageBox.Show(this, "This option is only available on Windows 11.", "Not supported",
+            MessageBox.Show(this, "This option is not available on this version of Windows.", "Not supported",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
