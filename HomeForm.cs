@@ -99,8 +99,7 @@ public sealed class HomeForm : Form
         var cards = new FlowLayoutPanel
         {
             Location = Point.Empty,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            AutoSize = false,
             FlowDirection = FlowDirection.LeftToRight,
             WrapContents = true,
             Margin = Padding.Empty,
@@ -142,9 +141,11 @@ public sealed class HomeForm : Form
             var twoColumns = available >= 820;
             cards.WrapContents = true;
             cards.Width = available;
+            var columns = twoColumns ? 2 : 1;
             var cardWidth = twoColumns ? (available - 30) / 2 : available - 12;
             foreach (var card in cardControls)
                 card.Width = Math.Max(260, cardWidth);
+            cards.Height = (int)Math.Ceiling(cardControls.Count / (double)columns) * 158;
             cards.PerformLayout();
         }
 
