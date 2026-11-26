@@ -9,7 +9,7 @@ A lightweight Windows 10/11 customization, system information, and registry util
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. The Apply all and Export `.regimp` actions stay visible above the list. Apply all changes only toggles you changed during the current session, previews the changes, and backs up each value before writing.
+- **Quick Tweaks** — individual Apply buttons or **Apply all** for toggles changed in the current session, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. The Apply all and Export `.regimp` actions stay visible above the list. Apply all changes only toggles you changed during the current session, previews the changes, and backs up each value before writing.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
