@@ -56,7 +56,7 @@ public sealed class HomeForm : Form
 
         var warning = new Panel
         {
-            Dock = DockStyle.Top, Height = 62, Padding = new Padding(14),
+            Dock = DockStyle.Top, Height = 72, Padding = new Padding(14),
             BackColor = dark ? Color.FromArgb(69, 52, 27) : Color.FromArgb(255, 244, 220),
             Margin = new Padding(0, 0, 0, 14)
         };
@@ -125,7 +125,7 @@ public sealed class HomeForm : Form
         }, 0, 0);
         layout.Controls.Add(new Label
         {
-            Text = description, AutoSize = true, Dock = DockStyle.Fill,
+            Text = description, AutoSize = false, Dock = DockStyle.Fill,
             ForeColor = dark ? Color.FromArgb(170, 170, 181) : Color.FromArgb(100, 101, 112),
             Margin = new Padding(0, 0, 0, 8)
         }, 0, 1);
