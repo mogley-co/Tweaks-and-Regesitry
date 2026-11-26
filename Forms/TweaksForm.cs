@@ -211,7 +211,7 @@ public sealed class TweaksForm : Form
     {
         foreach (var tweak in _tweaks)
         {
-            if (tweak.Name is "TaskbarAl" or "TaskbarDa" && !IsWindows11()) continue;
+            if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11()) continue;
             var current = ReadDword(tweak.Path, tweak.Name, tweak.DisabledValue);
             _checks[tweak].Checked = current == tweak.EnabledValue;
         }
