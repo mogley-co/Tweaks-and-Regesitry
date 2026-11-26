@@ -142,17 +142,32 @@ public sealed class TweaksForm : Form
             Margin = new Padding(0, 0, 0, 6)
         };
         _status.ForeColor = _dark ? Color.FromArgb(180, 180, 190) : Color.FromArgb(90, 90, 100);
+        var actions = new FlowLayoutPanel
+        {
+            AutoSize = true, Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true, Margin = new Padding(0, 6, 0, 0)
+        };
+        var applyAll = new Button
+        {
+            Text = "Apply all", AutoSize = true, Height = 34,
+            BackColor = Color.FromArgb(105, 78, 210), ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 0, 8, 0)
+        };
+        applyAll.FlatAppearance.BorderSize = 0;
+        applyAll.Click += ApplyAll;
         var export = new Button
         {
             Text = "Export current setup (.regimp)", AutoSize = true, Height = 34,
             BackColor = Color.FromArgb(74, 112, 160), ForeColor = Color.White,
-            FlatStyle = FlatStyle.Flat, Margin = new Padding(0, 8, 0, 0)
+            FlatStyle = FlatStyle.Flat, Margin = new Padding(0)
         };
         export.FlatAppearance.BorderSize = 0;
         export.Click += ExportCurrentSetup;
+        actions.Controls.Add(applyAll);
+        actions.Controls.Add(export);
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
-        footer.Controls.Add(export, 0, 2);
+        footer.Controls.Add(actions, 0, 2);
         root.Controls.Add(footer, 0, 2);
         Controls.Add(root);
 
@@ -267,6 +282,74 @@ public sealed class TweaksForm : Form
             MessageBox.Show(this, ex.Message, "Could not apply setting",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             _status.Text = "That setting could not be applied.";
+        }
+    }
+
+    private void ApplyAll(object? sender, EventArgs e)
+    {
+        var changes = new List<(string Path, string Name, int Value, string Title)>();
+
+        foreach (var tweak in _tweaks)
+        {
+            if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11())
+                continue;
+
+            var target = _checks[tweak].Checked ? tweak.EnabledValue : tweak.DisabledValue;
+            if (tweak.Name == "AppsUseLightTheme")
+            {
+                var themeValue = _checks[tweak].Checked ? 0 : 1;
+                if (ReadDword(Personalize, "AppsUseLightTheme", int.MinValue) != themeValue)
+                    changes.Add((Personalize, "AppsUseLightTheme", themeValue, tweak.Title));
+                if (ReadDword(Personalize, "SystemUsesLightTheme", int.MinValue) != themeValue)
+                    changes.Add((Personalize, "SystemUsesLightTheme", themeValue, tweak.Title));
+                continue;
+            }
+
+            if (ReadDword(tweak.Path, tweak.Name, int.MinValue) != target)
+                changes.Add((tweak.Path, tweak.Name, target, tweak.Title));
+        }
+
+        if (changes.Count == 0)
+        {
+            _status.Text = "Everything is already set as selected.";
+            MessageBox.Show(this, "No changes are needed. Your selected settings already match Windows.",
+                "Nothing to apply", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var preview = string.Join(Environment.NewLine,
+            changes.Select(x => $"• {x.Title} — {x.Name}"));
+        if (MessageBox.Show(this,
+            $"Apply {changes.Count} registry value change(s)?\n\n{preview}\n\nA separate .regbu backup will be created for every value before any changes are made.",
+            "Apply all Quick Tweaks", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            return;
+
+        try
+        {
+            // Finish all backups first. If any backup fails, no registry values are changed.
+            foreach (var change in changes)
+                _backups.SaveValue(RegistryHive.CurrentUser, change.Path, change.Name);
+
+            var applied = 0;
+            foreach (var change in changes)
+            {
+                _registry.SetValue(RegistryHive.CurrentUser, change.Path, change.Name,
+                    change.Value, RegistryValueKind.DWord);
+                applied++;
+            }
+
+            _status.Text = $"Applied {applied} registry value change(s).";
+            MessageBox.Show(this,
+                $"Applied {applied} registry value change(s).\nA .regbu backup was saved for each changed value.",
+                "Apply all complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            _status.Text = "Apply all stopped; check the saved backups.";
+            MessageBox.Show(this,
+                "Apply all could not finish. Some changes may already have been applied. Backups were created before the write phase; use Restore value backup if you need to undo a change.\n\n" + ex.Message,
+                "Apply all incomplete", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
