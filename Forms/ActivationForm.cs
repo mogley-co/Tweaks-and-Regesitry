@@ -68,7 +68,7 @@ public sealed class ActivationForm : Form
         buttons.Controls.Add(MakeButton("Check activation", async (_, _) => await RunDiagnostic("/xpr")));
         buttons.Controls.Add(MakeButton("Detailed license info", async (_, _) => await RunDiagnostic("/dlv")));
         buttons.Controls.Add(MakeButton("Activation settings", (_, _) => OpenTarget("ms-settings:activation")));
-        buttons.Controls.Add(MakeButton("Troubleshooter", (_, _) => OpenTarget("ms-settings:activation")));
+        buttons.Controls.Add(MakeButton("Activation settings / troubleshooter", (_, _) => OpenTarget("ms-settings:activation")));
         footer.Controls.Add(buttons, 0, 0);
         _status.ForeColor = _dark ? Color.Silver : Color.DimGray;
         _status.Margin = new Padding(0, 8, 0, 0);
