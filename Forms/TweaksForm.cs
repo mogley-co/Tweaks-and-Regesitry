@@ -234,7 +234,7 @@ public sealed class TweaksForm : Form
 
     private void ApplyOne(Tweak tweak, bool enabled)
     {
-        if (tweak.Name is "TaskbarAl" or "TaskbarDa" && !IsWindows11())
+        if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11())
         {
             MessageBox.Show(this, "This option is only available on Windows 11.", "Not supported",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
