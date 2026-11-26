@@ -31,6 +31,6 @@ jobs:
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
-          name: MogleyTweaks-win-x64
-          path: bin/Release/net8.0-windows/win-x64/publish/MogleyTweaks.exe
+          name: Tweaks-and-Registry-win-x64
+          path: bin/Release/net8.0-windows/win-x64/publish/TweaksAndRegistry.exe
           if-no-files-found: error
