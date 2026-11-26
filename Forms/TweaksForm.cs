@@ -194,6 +194,31 @@ public sealed class TweaksForm : Form
         accentGroup.Controls.Add(_accentButton);
         list.Controls.Add(accentGroup);
 
+        void ResizeRows()
+        {
+            var width = Math.Max(300, list.ClientSize.Width - 18);
+            foreach (Control item in list.Controls)
+            {
+                if (item is Panel row && row.Tag is Tweak)
+                {
+                    row.Width = width;
+                    var hint = row.Controls.OfType<Label>().FirstOrDefault();
+                    if (hint is not null) hint.MaximumSize = new Size(Math.Max(120, width - 150), 0);
+                    var apply = row.Controls.OfType<Button>().FirstOrDefault();
+                    if (apply is not null)
+                        apply.Location = new Point(width - apply.Width - 12, Math.Max(17, (row.Height - apply.Height) / 2));
+                }
+                else if (item is FlowLayoutPanel accent && accent.Tag is string)
+                {
+                    accent.Width = width;
+                    var text = accent.Controls.OfType<Label>().FirstOrDefault();
+                    if (text is not null) text.Width = Math.Max(140, width - 190);
+                }
+            }
+        }
+        list.SizeChanged += (_, _) => ResizeRows();
+        ResizeRows();
+
         root.Controls.Add(list, 0, 2);
         search.TextChanged += (_, _) => FilterTweaks(list, search.Text);
 
@@ -236,6 +261,7 @@ public sealed class TweaksForm : Form
         footer.Controls.Add(warning, 0, 0);
         footer.Controls.Add(_status, 0, 1);
         footer.Controls.Add(actions, 0, 2);
+        footer.SizeChanged += (_, _) => warning.MaximumSize = new Size(Math.Max(300, footer.ClientSize.Width - 8), 0);
         root.Controls.Add(footer, 0, 3);
         Controls.Add(root);
 
@@ -296,7 +322,7 @@ public sealed class TweaksForm : Form
     {
         var row = new Panel
         {
-            Tag = tweak, Width = 700, Height = 66, Margin = new Padding(0, 0, 0, 7),
+            Tag = tweak, Width = 700, Height = 70, Margin = new Padding(0, 0, 0, 7),
             BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White
         };
         var check = new CheckBox
@@ -308,14 +334,14 @@ public sealed class TweaksForm : Form
         var hint = new Label
         {
             Text = tweak.Description, AutoSize = true, MaximumSize = new Size(510, 0),
-            Location = new Point(34, 34),
+            Location = new Point(34, 36),
             ForeColor = _dark ? Color.FromArgb(165, 165, 177) : Color.FromArgb(108, 108, 118),
             Font = new Font("Segoe UI", 8.3f)
         };
         var apply = new Button
         {
             Text = "Apply", Width = 76, Height = 30, Anchor = AnchorStyles.Top | AnchorStyles.Right,
-            Location = new Point(610, 17), BackColor = Color.FromArgb(105, 78, 210),
+            Location = new Point(610, 20), BackColor = Color.FromArgb(105, 78, 210),
             ForeColor = Color.White, FlatStyle = FlatStyle.Flat
         };
         apply.FlatAppearance.BorderSize = 0;
