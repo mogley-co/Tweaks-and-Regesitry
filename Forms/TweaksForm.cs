@@ -8,7 +8,7 @@ public sealed class TweaksForm : Form
     private sealed record Tweak(
         string Group, string Title, string Description,
         string Path, string Name, int EnabledValue, int DisabledValue,
-        bool EnabledWhenValueIsZero = false);
+        bool Windows11Only = false, bool Windows10Only = false);
 
     private readonly RegistryStore _registry;
     private readonly BackupStore _backups;
@@ -42,11 +42,59 @@ public sealed class TweaksForm : Form
         new("FILE EXPLORER HOME", "Show recently used files", "Show recent files in File Explorer Home / Quick Access.", ExplorerAdvanced, "ShowRecent", 1, 0),
         new("FILE EXPLORER HOME", "Show frequently used folders", "Show frequently visited folders in File Explorer Home.", ExplorerAdvanced, "ShowFrequent", 1, 0),
         new("TASKBAR", "Show seconds in the clock", "Display hours, minutes and seconds on the taskbar clock.", ExplorerAdvanced, "ShowSecondsInSystemClock", 1, 0),
-        new("TASKBAR", "Align taskbar icons to the left", "Move taskbar icons to the left side (Windows 11).", ExplorerAdvanced, "TaskbarAl", 0, 1),
+        new("TASKBAR", "Align taskbar icons to the left", "Move taskbar icons to the left side (Windows 11).", ExplorerAdvanced, "TaskbarAl", 0, 1, Windows11Only: true),
         new("TASKBAR", "Enable taskbar animations", "Use Windows animations for taskbar interactions.", ExplorerAdvanced, "TaskbarAnimations", 1, 0),
         new("TASKBAR", "Show Task View button", "Show the desktop and open-window overview button.", ExplorerAdvanced, "ShowTaskViewButton", 1, 0),
-        new("TASKBAR", "Show Widgets button", "Show the Widgets entry point on the Windows 11 taskbar.", ExplorerAdvanced, "TaskbarDa", 1, 0),
-        new("NOTIFICATION AREA", "Show all tray icons", "Keep notification-area icons visible instead of hiding some.", Explorer, "EnableAutoTray", 0, 1)
+        new("TASKBAR", "Show Widgets button", "Show the Widgets entry point on the Windows 11 taskbar.", ExplorerAdvanced, "TaskbarDa", 1, 0, Windows11Only: true),
+        new("NOTIFICATION AREA", "Show all tray icons", "Keep notification-area icons visible instead of hiding some.", Explorer, "EnableAutoTray", 0, 1),
+        // FILE EXPLORER — navigation, previews and file handling
+        new("FILE EXPLORER", "Show all folders in navigation pane", "Include user folders, Control Panel and Recycle Bin in the navigation pane.", ExplorerAdvanced, "NavPaneShowAllFolders", 1, 0),
+        new("FILE EXPLORER", "Expand to the current folder", "Automatically expand the navigation pane to the folder you opened.", ExplorerAdvanced, "NavPaneExpandToCurrentFolder", 1, 0),
+        new("FILE EXPLORER", "Show file and folder information tips", "Show details when you hover over files and folders.", ExplorerAdvanced, "ShowInfoTip", 1, 0),
+        new("FILE EXPLORER", "Enable preview handlers", "Allow supported apps to preview files in the Preview pane.", ExplorerAdvanced, "ShowPreviewHandlers", 1, 0),
+        new("FILE EXPLORER", "Color compressed files", "Display compressed NTFS files in a different color.", ExplorerAdvanced, "ShowCompColor", 1, 0),
+        new("FILE EXPLORER", "Color encrypted files", "Display encrypted NTFS files in a different color.", ExplorerAdvanced, "ShowEncryptCompressedColor", 1, 0),
+        new("FILE EXPLORER", "Show drives without media", "Keep empty removable drives visible in This PC.", ExplorerAdvanced, "HideDrivesWithNoMedia", 0, 1),
+        new("FILE EXPLORER", "Show folder merge conflicts", "Show conflict prompts when copying folders with matching names.", ExplorerAdvanced, "HideMergeConflicts", 0, 1),
+        new("FILE EXPLORER", "Disable AutoPlay for removable media", "Stop Windows from automatically opening content on inserted media.", @"Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers", "DisableAutoplay", 1, 0),
+
+        // START MENU
+        new("START MENU", "Show recently opened documents", "Let Windows track recent documents for Start and jump lists.", ExplorerAdvanced, "Start_TrackDocs", 1, 0),
+        new("START MENU", "Show most-used apps", "Let Windows track frequently used apps for Start suggestions.", ExplorerAdvanced, "Start_TrackProgs", 1, 0),
+        new("START MENU", "Show account-related notifications", "Allow account notices and suggestions in the Start menu (Windows 11).", ExplorerAdvanced, "Start_AccountNotifications", 1, 0, Windows11Only: true),
+
+        // TASKBAR
+        new("TASKBAR", "Show taskbar search", "Show the Windows Search box or icon on the taskbar.", ExplorerAdvanced, "SearchboxTaskbarMode", 2, 0),
+        new("TASKBAR", "Show notification badges", "Show unread-count badges on supported taskbar app icons.", ExplorerAdvanced, "TaskbarBadges", 1, 0),
+        new("TASKBAR", "Use small taskbar buttons", "Reduce taskbar button size (Windows 10 only).", ExplorerAdvanced, "TaskbarSmallIcons", 1, 0, Windows10Only: true),
+        new("TASKBAR", "Never combine taskbar buttons", "Keep separate buttons for each open window (Windows 10 only).", ExplorerAdvanced, "TaskbarGlomLevel", 2, 0, Windows10Only: true),
+        new("TASKBAR", "Show the People button", "Show the legacy People button on the taskbar (Windows 10).", ExplorerAdvanced, "PeopleBand", 1, 0, Windows10Only: true),
+
+        // PRIVACY & SUGGESTIONS
+        new("PRIVACY", "Disable advertising ID", "Stop apps from using your Windows advertising identifier for personalized ads.", @"Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo", "Enabled", 0, 1),
+        new("PRIVACY", "Disable tailored experiences", "Turn off personalized tips based on diagnostic data.", @"Software\Microsoft\Windows\CurrentVersion\Privacy", "TailoredExperiencesWithDiagnosticDataEnabled", 0, 1),
+        new("PRIVACY", "Disable suggestions in Settings", "Hide suggested content in the Settings app.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SystemPaneSuggestionsEnabled", 0, 1),
+        new("PRIVACY", "Disable Windows welcome tips", "Stop Windows welcome and getting-started suggestion prompts.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SoftLandingEnabled", 0, 1),
+        new("PRIVACY", "Disable silently suggested app installs", "Stop Windows from silently installing suggested consumer apps where this setting is honored.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 0, 1),
+        new("PRIVACY", "Disable preinstalled app suggestions", "Turn off Windows consumer app suggestion delivery.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 0, 1),
+        new("PRIVACY", "Disable OEM app suggestions", "Turn off manufacturer app suggestions delivered through Windows.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "OemPreInstalledAppsEnabled", 0, 1),
+        new("PRIVACY", "Disable lock-screen tips", "Stop rotating Windows spotlight tips and suggestions on the lock screen.", @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "RotatingLockScreenOverlayEnabled", 0, 1),
+
+        // GAMING
+        new("GAMING", "Enable Windows Game Mode", "Let Windows prioritize supported games while they are running.", @"Software\Microsoft\GameBar", "AutoGameModeEnabled", 1, 0),
+        new("GAMING", "Allow automatic Game Mode", "Allow Windows to automatically enable Game Mode for supported games.", @"Software\Microsoft\GameBar", "AllowAutoGameMode", 1, 0),
+        new("GAMING", "Disable Game Bar background capture", "Turn off background game recording. This also disables capture features that rely on it.", @"System\GameConfigStore", "GameDVR_Enabled", 0, 1),
+        new("GAMING", "Disable app capture", "Turn off Windows app and game capture. Screenshots and recording shortcuts may be affected.", @"Software\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, 1),
+
+        // DESKTOP & WINDOWS BEHAVIOR
+        new("DESKTOP", "Disable window shake to minimize", "Prevent shaking a title bar from minimizing other windows.", @"Software\Policies\Microsoft\Windows\Explorer", "NoWindowMinimizingShortcuts", 1, 0),
+        new("DESKTOP", "Disable Aero Peek desktop preview", "Stop hovering over the taskbar corner from previewing the desktop.", ExplorerAdvanced, "DisablePreviewDesktop", 1, 0),
+        new("DESKTOP", "Show desktop icons", "Show desktop icons instead of hiding them.", ExplorerAdvanced, "HideIcons", 0, 1),
+        new("DESKTOP", "Reduce Explorer startup delay", "Remove the legacy Explorer startup delay value; Windows may ignore this on newer builds.", @"Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, 2000),
+
+        // NOTIFICATIONS & CLIPBOARD
+        new("NOTIFICATIONS", "Enable Windows toast notifications", "Allow supported apps to show toast notifications.", @"Software\Microsoft\Windows\CurrentVersion\PushNotifications", "ToastEnabled", 1, 0),
+        new("CLIPBOARD", "Enable clipboard history", "Allow Win + V clipboard history. Clipboard history may contain sensitive copied text.", @"Software\Microsoft\Clipboard", "EnableClipboardHistory", 1, 0),
     };
 
     public TweaksForm(RegistryStore registry, BackupStore backups)
@@ -90,7 +138,7 @@ public sealed class TweaksForm : Form
         string? previousGroup = null;
         foreach (var tweak in _tweaks)
         {
-            if (!IsWindows11() && (tweak.Name is "TaskbarAl" or "TaskbarDa"))
+            if (!IsSupported(tweak))
                 continue;
 
             if (tweak.Group != previousGroup)
@@ -222,11 +270,14 @@ public sealed class TweaksForm : Form
 
     private static bool IsWindows11() => Environment.OSVersion.Version.Build >= 22000;
 
+    private static bool IsSupported(Tweak tweak) =>
+        (!tweak.Windows11Only || IsWindows11()) && (!tweak.Windows10Only || !IsWindows11());
+
     private void LoadCurrentValues()
     {
         foreach (var tweak in _tweaks)
         {
-            if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11()) continue;
+            if (!IsSupported(tweak)) continue;
             var current = ReadDword(tweak.Path, tweak.Name, tweak.DisabledValue);
             _checks[tweak].Checked = current == tweak.EnabledValue;
         }
@@ -249,7 +300,7 @@ public sealed class TweaksForm : Form
 
     private void ApplyOne(Tweak tweak, bool enabled)
     {
-        if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11())
+        if (!IsSupported(tweak))
         {
             MessageBox.Show(this, "This option is only available on Windows 11.", "Not supported",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -291,7 +342,7 @@ public sealed class TweaksForm : Form
 
         foreach (var tweak in _tweaks)
         {
-            if ((tweak.Name is "TaskbarAl" or "TaskbarDa") && !IsWindows11())
+            if (!IsSupported(tweak))
                 continue;
 
             var target = _checks[tweak].Checked ? tweak.EnabledValue : tweak.DisabledValue;
