@@ -9,11 +9,12 @@ A lightweight Windows 10/11 customization, system information, and registry util
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. It also exports the managed current settings as a shareable `.regimp` pack.
+- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. The Apply all and Export `.regimp` actions stay visible above the list. Apply all changes only toggles you changed during the current session, previews the changes, and backs up each value before writing.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
 - **System Tools** — inspect Windows system information, startup entries, installed applications, running processes, local drive capacity, and network adapters. Each inventory has a direct link to the relevant Windows management page; the Windows Tools tab launches Task Manager, Services, Device Manager, Disk Management, Event Viewer, System Information, Resource Monitor, and common Settings pages.
+- **Personalization** — set a desktop wallpaper, assign a custom `.ico` file to a folder, and add or remove an “Open Terminal here” File Explorer context-menu item. Wallpaper and registry changes are backed up; an existing folder `desktop.ini` is copied before it is changed.
 
 ## System Tools
 
@@ -47,7 +48,7 @@ These limits reduce risk but do not guarantee a pack is safe. A malicious or inc
 - Backups are helpful but are not a complete system restore and cannot guarantee recovery.
 - The app does not request administrator privileges at startup.
 - Windows permissions still apply.
-- Quick Tweaks can apply one selected option or all selected states. Apply all previews the changes and creates every `.regbu` backup before writing any values. If a write fails midway, some changes may already have been applied; restore from the saved backups as needed. Create a Windows restore point before experimenting with important system settings.
+- Quick Tweaks can apply one selected option or only the toggles you changed during the current session. Apply all previews the changes and creates every `.regbu` backup before writing any values. If a write fails midway, some changes may already have been applied; restore from the saved backups as needed. Create a Windows restore point before experimenting with important system settings.
 - Some changes need Explorer restart or sign-out. A few legacy or optional registry settings may be ignored by certain Windows builds; unsupported OS-specific options are hidden.
 
 ## Build
