@@ -9,7 +9,7 @@ A lightweight Windows 10/11 customization utility built with C# WinForms.
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — common appearance and File Explorer settings.
+- **Quick Tweaks** — beginner-friendly switches for dark mode, accent color, transparency, file extensions, hidden files, File Explorer startup, taskbar seconds, and Windows 11 taskbar alignment.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
