@@ -381,7 +381,7 @@ public sealed class MainForm : Form
         Directory.CreateDirectory(_backups.Folder);
         using var dialog = new OpenFileDialog
         {
-            Filter = "Mogley value backups (*.json)|*.json",
+            Filter = "Mogley registry backups (*.regbu;*.json)|*.regbu;*.json",
             InitialDirectory = _backups.Folder
         };
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
