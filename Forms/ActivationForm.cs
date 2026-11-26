@@ -43,7 +43,7 @@ public sealed class ActivationForm : Form
         }, 0, 0);
         root.Controls.Add(new Label
         {
-            Text = "Check the activation state reported by Windows, inspect licensing details, and open Microsoft's activation tools.",
+            Text = "Check the activation state reported by Windows and inspect licensing details. Windows controls the activation watermark; this app does not move or hide it.",
             AutoSize = true, MaximumSize = new Size(740, 0),
             ForeColor = _dark ? Color.Silver : Color.DimGray,
             Margin = new Padding(0, 0, 0, 12)
@@ -67,8 +67,7 @@ public sealed class ActivationForm : Form
         };
         buttons.Controls.Add(MakeButton("Check activation", async (_, _) => await RunDiagnostic("/xpr")));
         buttons.Controls.Add(MakeButton("Detailed license info", async (_, _) => await RunDiagnostic("/dlv")));
-        buttons.Controls.Add(MakeButton("Activation settings", (_, _) => OpenTarget("ms-settings:activation")));
-        buttons.Controls.Add(MakeButton("Activation settings / troubleshooter", (_, _) => OpenTarget("ms-settings:activation")));
+        buttons.Controls.Add(MakeButton("Open Activation settings", (_, _) => OpenTarget("ms-settings:activation")));
         footer.Controls.Add(buttons, 0, 0);
         _status.ForeColor = _dark ? Color.Silver : Color.DimGray;
         _status.Margin = new Padding(0, 8, 0, 0);
