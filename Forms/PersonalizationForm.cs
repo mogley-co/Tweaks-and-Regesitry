@@ -208,7 +208,8 @@ public sealed class PersonalizationForm : Form
         menu.SetValue("Icon", "powershell.exe", RegistryValueKind.String);
         using var command = menu.CreateSubKey("command", writable: true)
             ?? throw new UnauthorizedAccessException("Cannot create the context-menu command.");
-        command.SetValue("", "\"powershell.exe\" -NoExit -Command \"Set-Location -LiteralPath '%V'\"", RegistryValueKind.String);
+        var target = path.Equals(BackgroundMenuPath, StringComparison.OrdinalIgnoreCase) ? "%V" : "%1";
+        command.SetValue("", $"cmd.exe /K pushd \"{target}\"", RegistryValueKind.String);
     }
 
     private void RemoveContextMenu(object? sender, EventArgs e)
