@@ -331,6 +331,14 @@ public sealed class MainForm : Form
 
     private void ExportRegistryPack()
     {
+        if (_currentHive != RegistryHive.CurrentUser ||
+            (!_currentPath.Equals("Software", StringComparison.OrdinalIgnoreCase) &&
+             !_currentPath.StartsWith("Software\\\\", StringComparison.OrdinalIgnoreCase)))
+        {
+            MessageBox.Show(this, "Shareable .regimp packs can only be created from keys inside HKEY_CURRENT_USER\\\\Software.",
+                "Unsupported registry location", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
         var name = Prompt("Give this registry pack a name:", "Create shareable pack");
         if (name is null) return;
         var description = Prompt("Briefly describe what this pack changes:", "Pack description") ?? "";
