@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MogleyTweaks.Forms;
 using MogleyTweaks.Services;
 
