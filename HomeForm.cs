@@ -84,7 +84,7 @@ public sealed class HomeForm : Form
         cards.Controls.Add(Card("Advanced Registry Editor", "Browse registry hives and manage keys and values manually.", "Open Editor", dark, (_, _) => OpenAdvanced()), 0, 1);
         cards.Controls.Add(Card("Backups", "Open and manage the registry value backups created by this app.", "Open Backup Folder", dark, (_, _) => OpenBackups()), 1, 1);
         cards.Controls.Add(Card("System Tools", "Inspect system information, startup entries, installed apps, processes, storage and network adapters.", "Open System Tools", dark, (_, _) => OpenSystemTools()), 0, 2);
-        cards.SetColumnSpan(cards.GetControlFromPosition(0, 2)!, 2);
+        cards.Controls.Add(Card("Personalization", "Set desktop wallpaper, customize folder icons, and add or remove a File Explorer right-click action.", "Open Personalization", dark, (_, _) => OpenPersonalization()), 1, 2);
         content.Controls.Add(cards, 0, 1);
         root.Controls.Add(content, 0, 2);
 
@@ -145,6 +145,12 @@ public sealed class HomeForm : Form
     private void OpenSystemTools()
     {
         using var form = new SystemToolsForm();
+        form.ShowDialog(this);
+    }
+
+    private void OpenPersonalization()
+    {
+        using var form = new PersonalizationForm();
         form.ShowDialog(this);
     }
 
