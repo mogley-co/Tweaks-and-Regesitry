@@ -101,7 +101,8 @@ public sealed class MainForm : Form
         var menu = new MenuStrip();
         var file = new ToolStripMenuItem("File");
         file.DropDownItems.Add("Refresh", null, (_, _) => LoadSelectedKey());
-        file.DropDownItems.Add("Export selected key...", null, (_, _) => ExportCurrentKey());
+        file.DropDownItems.Add("Export selected key as .reg...", null, (_, _) => ExportCurrentKey());
+        file.DropDownItems.Add("Share selected key as .regimp...", null, (_, _) => ExportRegistryPack());
         file.DropDownItems.Add("Restore value backup...", null, (_, _) => RestoreBackup());
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add("Exit", null, (_, _) => Close());
@@ -324,6 +325,27 @@ public sealed class MainForm : Form
                 lines.Add(FormatRegValue(item));
             File.WriteAllText(dialog.FileName, string.Join(Environment.NewLine, lines), System.Text.Encoding.Unicode);
             _status.Text = "Exported " + dialog.FileName;
+        }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private void ExportRegistryPack()
+    {
+        var name = Prompt("Give this registry pack a name:", "Create shareable pack");
+        if (name is null) return;
+        var description = Prompt("Briefly describe what this pack changes:", "Pack description") ?? "";
+        using var dialog = new SaveFileDialog
+        {
+            Filter = "Mogley Registry Packs (*.regimp)|*.regimp",
+            FileName = string.Join("-", name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)) + ".regimp",
+            DefaultExt = "regimp"
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        try
+        {
+            RegistryPackStore.Export(dialog.FileName, name, description, _currentPath, _currentValues);
+            MessageBox.Show(this, "Shareable pack created. It contains only values from the selected key. Imported packs are restricted to HKEY_CURRENT_USER\\Software and are previewed before applying.",
+                "Pack exported", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex) { ShowError(ex); }
     }
