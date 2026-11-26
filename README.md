@@ -9,7 +9,7 @@ A lightweight Windows 10/11 customization utility built with C# WinForms.
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — individual Apply buttons for each setting, including appearance, File Explorer, Start menu, taskbar, and notification-area options. Applying one option does not apply the others.
+- **Quick Tweaks** — individual Apply buttons for each setting, with expanded appearance, File Explorer, File Explorer Home, taskbar, and notification-area options. It also exports the managed current settings as a shareable `.regimp` pack. Applying one option does not apply the others.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
@@ -23,7 +23,8 @@ A `.regimp` file is a structured JSON-based Mogley pack, not an executable progr
 - Pack import does not support deleting keys or values, running commands, loading DLLs, or writing to machine-wide hives.
 - Every entry is shown in a review screen before applying.
 - Backups are saved before changes.
-- The Advanced Registry Editor can export the selected HKCU\\Software key as a shareable `.regimp` pack.
+- Quick Tweaks can export its managed current settings across multiple HKCU\\Software keys into one `.regimp` pack.
+- The Advanced Registry Editor can also export the selected HKCU\\Software key as a shareable `.regimp` pack.
 
 These limits reduce risk but do not guarantee a pack is safe. A malicious or incorrect user-level registry value can still disrupt applications, Windows settings, or your user profile. Only import packs from sources you trust and read the preview carefully.
 
