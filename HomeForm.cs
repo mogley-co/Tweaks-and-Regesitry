@@ -43,7 +43,7 @@ public sealed class HomeForm : Form
         cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         cards.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
         cards.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-        cards.Controls.Add(Card("Quick Tweaks", "Simple switches for appearance and File Explorer.", "Open Quick Tweaks", dark, (_, _) => OpenQuickTweaks()), 0, 0);
+        cards.Controls.Add(Card("Quick Tweaks", "50+ searchable switches for appearance, Explorer, Start, taskbar, privacy, gaming and more.", "Open Quick Tweaks", dark, (_, _) => OpenQuickTweaks()), 0, 0);
         cards.Controls.Add(Card("Registry Packs", "Import a .regimp pack, review every change, and apply it.", "Import .regimp", dark, (_, _) => ImportPack()), 1, 0);
         cards.Controls.Add(Card("Advanced Registry Editor", "Browse and edit registry keys and values manually.", "Open Editor", dark, (_, _) => OpenAdvanced()), 0, 1);
         cards.Controls.Add(Card("Backups", "View the registry value backups created by this app.", "Open Backup Folder", dark, (_, _) => OpenBackups()), 1, 1);
