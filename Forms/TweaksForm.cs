@@ -143,13 +143,15 @@ public sealed class TweaksForm : Form
         _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
     }
 
-    private Panel MakeSection(string title)
+    private FlowLayoutPanel MakeSection(string title)
     {
-        var section = new Panel
+        var section = new FlowLayoutPanel
         {
             Width = 630,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
             BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White,
             Padding = new Padding(15, 12, 15, 12),
             Margin = new Padding(0, 0, 0, 14)
@@ -160,7 +162,6 @@ public sealed class TweaksForm : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
             ForeColor = _dark ? Color.FromArgb(174, 157, 232) : Color.FromArgb(105, 78, 170),
-            Dock = DockStyle.Top,
             Margin = new Padding(0, 0, 0, 8)
         };
         section.Controls.Add(label);
