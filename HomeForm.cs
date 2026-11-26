@@ -71,11 +71,12 @@ public sealed class HomeForm : Form
 
         var cards = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 3,
+            Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4,
             BackColor = BackColor, Margin = Padding.Empty, Padding = Padding.Empty
         };
         cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         cards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        cards.RowStyles.Add(new RowStyle(SizeType.Percent, 1));
         cards.RowStyles.Add(new RowStyle(SizeType.Percent, 1));
         cards.RowStyles.Add(new RowStyle(SizeType.Percent, 1));
         cards.RowStyles.Add(new RowStyle(SizeType.Absolute, 116));
@@ -85,6 +86,8 @@ public sealed class HomeForm : Form
         cards.Controls.Add(Card("Backups", "Open and manage the registry value backups created by this app.", "Open Backup Folder", dark, (_, _) => OpenBackups()), 1, 1);
         cards.Controls.Add(Card("System Tools", "Inspect system information, startup entries, installed apps, processes, storage and network adapters.", "Open System Tools", dark, (_, _) => OpenSystemTools()), 0, 2);
         cards.Controls.Add(Card("Personalization", "Set desktop wallpaper, customize folder icons, and add or remove a File Explorer right-click action.", "Open Personalization", dark, (_, _) => OpenPersonalization()), 1, 2);
+        cards.Controls.Add(Card("Windows Activation", "Check activation status, inspect license details, and open official activation settings.", "Open Activation", dark, (_, _) => OpenActivation()), 0, 3);
+        cards.SetColumnSpan(cards.GetControlFromPosition(0, 3)!, 2);
         content.Controls.Add(cards, 0, 1);
         root.Controls.Add(content, 0, 2);
 
@@ -151,6 +154,12 @@ public sealed class HomeForm : Form
     private void OpenPersonalization()
     {
         using var form = new PersonalizationForm();
+        form.ShowDialog(this);
+    }
+
+    private void OpenActivation()
+    {
+        using var form = new ActivationForm();
         form.ShowDialog(this);
     }
 
