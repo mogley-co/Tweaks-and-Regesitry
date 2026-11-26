@@ -9,7 +9,7 @@ A lightweight Windows 10/11 customization utility built with C# WinForms.
 
 The app opens to a beginner-friendly home screen:
 
-- **Quick Tweaks** — individual Apply buttons for each setting, with expanded appearance, File Explorer, File Explorer Home, taskbar, and notification-area options. It also exports the managed current settings as a shareable `.regimp` pack. Applying one option does not apply the others.
+- **Quick Tweaks** — individual Apply buttons or **Apply all** for the selected states, with expanded appearance, File Explorer, File Explorer Home, taskbar, and notification-area options. It also exports the managed current settings as a shareable `.regimp` pack.
 - **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
 - **Advanced Registry Editor** — manual registry browsing and editing.
 - **Backups** — open the folder containing saved value backups.
@@ -22,7 +22,7 @@ A `.regimp` file is a structured JSON-based Mogley pack, not an executable progr
 - Imported entries are restricted to `HKEY_CURRENT_USER\\Software`.
 - Pack import does not support deleting keys or values, running commands, loading DLLs, or writing to machine-wide hives.
 - Every entry is shown in a review screen before applying.
-- Backups are saved before changes.
+- A separate `.regbu` backup is saved for each registry value before changes. Older `.json` value backups remain restorable.
 - Quick Tweaks can export its managed current settings across multiple HKCU\\Software keys into one `.regimp` pack.
 - The Advanced Registry Editor can also export the selected HKCU\\Software key as a shareable `.regimp` pack.
 
@@ -34,7 +34,7 @@ These limits reduce risk but do not guarantee a pack is safe. A malicious or inc
 - Backups are helpful but are not a complete system restore and cannot guarantee recovery.
 - The app does not request administrator privileges at startup.
 - Windows permissions still apply.
-- Quick Tweaks applies one selected option at a time. Review each option before applying it, and create a restore point before experimenting with important system settings.
+- Quick Tweaks can apply one selected option or all selected states. Apply all previews the changes and creates every `.regbu` backup before writing any values. If a write fails midway, some changes may already have been applied; restore from the saved backups as needed. Create a Windows restore point before experimenting with important system settings.
 - Some changes need Explorer restart or sign-out.
 
 ## Build
@@ -59,7 +59,7 @@ Output: `bin\\Release\\net8.0-windows\\win-x64\\publish\\MogleyTweaks.exe`
 
 - This is an early utility, not a replacement for Windows Registry Editor.
 - Registry availability and behavior can vary between Windows builds.
-- Backups cover individual values, not complete registry hives or system state.
+- `.regbu` backups cover individual values, not complete registry hives or system state.
 
 ## License
 
