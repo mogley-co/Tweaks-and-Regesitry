@@ -11,9 +11,9 @@ public sealed class PersonalizationForm : Form
     private readonly bool _dark = ThemeService.IsDark();
     private readonly Label _status = new() { AutoSize = true };
 
-    private const string WallpaperValuePath = @"Control Panel\\Desktop";
-    private const string BackgroundMenuPath = @"Software\\Classes\\Directory\\Background\\shell\\MogleyOpenTerminal";
-    private const string FolderMenuPath = @"Software\\Classes\\Directory\\shell\\MogleyOpenTerminal";
+    private const string WallpaperValuePath = @"Control Panel\Desktop";
+    private const string BackgroundMenuPath = @"Software\Classes\Directory\Background\shell\MogleyOpenTerminal";
+    private const string FolderMenuPath = @"Software\Classes\Directory\shell\MogleyOpenTerminal";
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool SystemParametersInfo(uint action, uint parameter, string value, uint flags);
@@ -199,7 +199,7 @@ public sealed class PersonalizationForm : Form
     {
         foreach (var name in new[] { "", "MUIVerb", "Icon" })
             _backups.SaveValue(RegistryHive.CurrentUser, path, name);
-        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\\command", "");
+        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\command", "");
 
         using var root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
         using var menu = root.CreateSubKey(path, writable: true)
@@ -239,7 +239,7 @@ public sealed class PersonalizationForm : Form
         if (menu is null) return;
         foreach (var name in new[] { "", "MUIVerb", "Icon" })
             _backups.SaveValue(RegistryHive.CurrentUser, path, name);
-        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\\command", "");
+        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\command", "");
         root.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
     }
 }
