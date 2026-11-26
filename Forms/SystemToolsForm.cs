@@ -68,7 +68,15 @@ public sealed class SystemToolsForm : Form
         var panel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 };
         panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        panel.Controls.Add(new Label { Text = note, Dock = DockStyle.Fill, AutoSize = true, Padding = new Padding(2, 4, 2, 12), MaximumSize = new Size(980, 0), ForeColor = _dark ? Color.Gainsboro : Color.DimGray }, 0, 0);
+        var header = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, WrapContents = true, Padding = new Padding(2) };
+        header.Controls.Add(new Label { Text = note, AutoSize = true, MaximumSize = new Size(790, 0), Margin = new Padding(0, 5, 12, 8), ForeColor = _dark ? Color.Gainsboro : Color.DimGray });
+        var target = ReferenceEquals(list, _startup) ? "ms-settings:startupapps"
+            : ReferenceEquals(list, _apps) ? "ms-settings:appsfeatures"
+            : ReferenceEquals(list, _processes) ? "taskmgr.exe"
+            : ReferenceEquals(list, _drives) ? "ms-settings:storagesense"
+            : "ms-settings:network-status";
+        header.Controls.Add(MakeButton(ReferenceEquals(list, _processes) ? "Open Task Manager" : "Manage in Windows", (_, _) => OpenTool(target)));
+        panel.Controls.Add(header, 0, 0);
         panel.Controls.Add(list, 0, 1);
         return panel;
     }
