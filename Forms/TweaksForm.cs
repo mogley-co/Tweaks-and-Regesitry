@@ -5,25 +5,44 @@ namespace MogleyTweaks.Forms;
 
 public sealed class TweaksForm : Form
 {
+    private sealed record Tweak(
+        string Group, string Title, string Description,
+        string Path, string Name, int EnabledValue, int DisabledValue,
+        bool EnabledWhenValueIsZero = false);
+
     private readonly RegistryStore _registry;
     private readonly BackupStore _backups;
     private readonly bool _dark = ThemeService.IsDark();
-
-    private readonly CheckBox _darkMode = new() { Text = "Dark mode", AutoSize = true };
-    private readonly CheckBox _extensions = new() { Text = "Show file extensions", AutoSize = true };
-    private readonly CheckBox _hidden = new() { Text = "Show hidden files", AutoSize = true };
-    private readonly CheckBox _thisPc = new() { Text = "Open File Explorer to This PC", AutoSize = true };
-    private readonly CheckBox _seconds = new() { Text = "Show seconds in the taskbar clock", AutoSize = true };
-    private readonly CheckBox _transparency = new() { Text = "Turn off transparency effects", AutoSize = true };
-    private readonly CheckBox _leftTaskbar = new() { Text = "Align taskbar icons to the left", AutoSize = true };
-    private readonly Button _accentButton = new() { Text = "Choose accent color", AutoSize = true, Height = 34 };
+    private readonly Dictionary<Tweak, CheckBox> _checks = new();
     private readonly Label _status = new() { AutoSize = true };
-
     private Color _accent = Color.FromArgb(105, 75, 210);
+    private Button? _accentButton;
 
     private const string Personalize = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
     private const string ExplorerAdvanced = @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced";
+    private const string Explorer = @"Software\Microsoft\Windows\CurrentVersion\Explorer";
     private const string Dwm = @"Software\Microsoft\Windows\DWM";
+
+    private readonly List<Tweak> _tweaks = new()
+    {
+        new("APPEARANCE", "Use dark mode", "Use dark colors for Windows and supported apps.", Personalize, "AppsUseLightTheme", 0, 1),
+        new("APPEARANCE", "Turn off transparency", "Use solid Windows surfaces instead of transparency.", Personalize, "EnableTransparency", 0, 1),
+        new("APPEARANCE", "Show accent color on taskbar and Start", "Use your Windows accent color on more surfaces.", Dwm, "ColorPrevalence", 1, 0),
+        new("FILE EXPLORER", "Show file extensions", "Display endings such as .txt, .png and .zip.", ExplorerAdvanced, "HideFileExt", 0, 1),
+        new("FILE EXPLORER", "Show hidden files", "Display files and folders marked as hidden.", ExplorerAdvanced, "Hidden", 1, 2),
+        new("FILE EXPLORER", "Open to This PC", "Open File Explorer at your drives instead of Home.", ExplorerAdvanced, "LaunchTo", 1, 2),
+        new("FILE EXPLORER", "Show full path in title bar", "Display the complete folder path in File Explorer.", ExplorerAdvanced, "ShowFullPath", 1, 0),
+        new("FILE EXPLORER", "Show the status bar", "Display item information at the bottom of File Explorer.", ExplorerAdvanced, "ShowStatusBar", 1, 0),
+        new("FILE EXPLORER", "Show image and video thumbnails", "Show previews instead of generic file icons.", ExplorerAdvanced, "IconsOnly", 0, 1),
+        new("FILE EXPLORER", "Show drive letters first", "Place drive letters before drive names in This PC.", ExplorerAdvanced, "ShowDriveLettersFirst", 4, 0),
+        new("FILE EXPLORER", "Show sync provider notifications", "Allow cloud storage apps to show sync messages in Explorer.", ExplorerAdvanced, "ShowSyncProviderNotifications", 1, 0),
+        new("START MENU", "Show recently opened files", "Allow recent files to appear in Start and jump lists.", ExplorerAdvanced, "Start_TrackDocs", 1, 0),
+        new("START MENU", "Show frequently used apps", "Allow Windows to track apps for the Start menu list.", ExplorerAdvanced, "Start_TrackProgs", 1, 0),
+        new("TASKBAR", "Show seconds in the clock", "Display hours, minutes and seconds on the taskbar clock.", ExplorerAdvanced, "ShowSecondsInSystemClock", 1, 0),
+        new("TASKBAR", "Align taskbar icons to the left", "Move taskbar icons to the left side (Windows 11).", ExplorerAdvanced, "TaskbarAl", 0, 1),
+        new("TASKBAR", "Enable taskbar animations", "Use Windows animations for taskbar interactions.", ExplorerAdvanced, "TaskbarAnimations", 1, 0),
+        new("NOTIFICATION AREA", "Show all tray icons", "Keep notification-area icons visible instead of hiding some.", Explorer, "EnableAutoTray", 0, 1)
+    };
 
     public TweaksForm(RegistryStore registry, BackupStore backups)
     {
@@ -32,168 +51,143 @@ public sealed class TweaksForm : Form
 
         Text = "Quick Tweaks";
         StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(720, 690);
-        MinimumSize = new Size(620, 600);
-        Font = new Font("Segoe UI", 10);
+        ClientSize = new Size(790, 760);
+        MinimumSize = new Size(680, 620);
+        Font = new Font("Segoe UI", 9.5f);
         BackColor = _dark ? Color.FromArgb(25, 25, 29) : Color.FromArgb(245, 246, 249);
         ForeColor = _dark ? Color.FromArgb(239, 239, 244) : Color.FromArgb(35, 35, 42);
 
         var root = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            Padding = new Padding(24, 20, 24, 16),
-            ColumnCount = 1,
-            RowCount = 4
+            Dock = DockStyle.Fill, Padding = new Padding(22, 18, 22, 14),
+            ColumnCount = 1, RowCount = 3
         };
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         var heading = new Label
         {
-            Text = "Quick Tweaks",
-            AutoSize = true,
-            Font = new Font("Segoe UI", 23, FontStyle.Bold),
+            Text = "Quick Tweaks", AutoSize = true,
+            Font = new Font("Segoe UI", 22, FontStyle.Bold),
             ForeColor = _dark ? Color.FromArgb(238, 231, 255) : Color.FromArgb(47, 39, 82),
-            Margin = new Padding(0, 0, 0, 4)
-        };
-        var subtitle = new Label
-        {
-            Text = "Simple Windows settings. Turn on what you want, then press Apply.",
-            AutoSize = true,
-            ForeColor = _dark ? Color.FromArgb(170, 170, 181) : Color.FromArgb(105, 105, 115),
-            Margin = new Padding(0, 0, 0, 16)
+            Margin = new Padding(0, 0, 0, 14)
         };
         root.Controls.Add(heading, 0, 0);
-        root.Controls.Add(subtitle, 0, 1);
 
-        var options = new FlowLayoutPanel
+        var list = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            AutoScroll = true,
-            Padding = new Padding(0, 2, 8, 4),
+            Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown,
+            WrapContents = false, AutoScroll = true, Padding = new Padding(0, 2, 8, 4),
             BackColor = BackColor
         };
 
-        var appearance = MakeSection("LOOK & FEEL");
-        appearance.Controls.Add(MakeOption(_darkMode, "Use dark colors across Windows and supported apps."));
-        appearance.Controls.Add(MakeOption(_transparency, "Turn off transparent surfaces in Windows."));
-        appearance.Controls.Add(MakeOption(_accentButton, "Pick the color used for Windows highlights."));
-        options.Controls.Add(appearance);
+        string? previousGroup = null;
+        foreach (var tweak in _tweaks)
+        {
+            if (tweak.Group == "TASKBAR" && !IsWindows11() && tweak.Name == "TaskbarAl")
+                continue;
 
-        var explorer = MakeSection("FILE EXPLORER");
-        explorer.Controls.Add(MakeOption(_extensions, "See endings like .txt, .png and .zip."));
-        explorer.Controls.Add(MakeOption(_hidden, "Show files and folders marked as hidden."));
-        explorer.Controls.Add(MakeOption(_thisPc, "Open to your drives instead of Home or Quick Access."));
-        options.Controls.Add(explorer);
+            if (tweak.Group != previousGroup)
+            {
+                list.Controls.Add(MakeGroupHeader(tweak.Group));
+                previousGroup = tweak.Group;
+            }
+            list.Controls.Add(MakeTweakRow(tweak));
+        }
 
-        var taskbar = MakeSection("TASKBAR");
-        taskbar.Controls.Add(MakeOption(_seconds, "Display hours, minutes and seconds."));
-        if (IsWindows11())
-            taskbar.Controls.Add(MakeOption(_leftTaskbar, "Move taskbar icons to the left side."));
-        options.Controls.Add(taskbar);
+        var accentGroup = new FlowLayoutPanel
+        {
+            Width = 700, Height = 74, AutoSize = false,
+            FlowDirection = FlowDirection.LeftToRight, WrapContents = false,
+            Padding = new Padding(12, 10, 12, 8), Margin = new Padding(0, 8, 0, 12),
+            BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White
+        };
+        var accentText = new Label
+        {
+            Text = "ACCENT COLOR\nPick the highlight color used by Windows.",
+            AutoSize = false, Width = 470, Height = 48,
+            ForeColor = _dark ? Color.White : Color.FromArgb(35, 35, 42),
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        _accentButton = new Button
+        {
+            Text = "Choose & apply", Width = 150, Height = 36,
+            BackColor = Color.FromArgb(105, 78, 210), ForeColor = Color.White,
+            FlatStyle = FlatStyle.Flat, Margin = new Padding(8, 8, 0, 0)
+        };
+        _accentButton.FlatAppearance.BorderSize = 0;
+        _accentButton.Click += ChooseAndApplyAccent;
+        accentGroup.Controls.Add(accentText);
+        accentGroup.Controls.Add(_accentButton);
+        list.Controls.Add(accentGroup);
 
-        root.Controls.Add(options, 0, 2);
+        root.Controls.Add(list, 0, 1);
 
         var footer = new TableLayoutPanel
         {
-            Dock = DockStyle.Bottom,
-            AutoSize = true,
-            ColumnCount = 2,
-            RowCount = 2,
-            Padding = new Padding(0, 12, 0, 0)
+            Dock = DockStyle.Bottom, AutoSize = true, ColumnCount = 1, RowCount = 2,
+            Padding = new Padding(0, 10, 0, 0)
         };
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
         var warning = new Label
         {
-            Text = "Registry changes can affect Windows. Backups are saved before changes, but they are not a full system restore.",
-            AutoSize = true,
-            MaximumSize = new Size(455, 0),
+            Text = "Each Apply button changes only that one setting. A backup is saved before its registry value changes.",
+            AutoSize = true, MaximumSize = new Size(700, 0),
             ForeColor = _dark ? Color.FromArgb(255, 210, 145) : Color.FromArgb(133, 83, 20),
-            Padding = new Padding(0, 7, 8, 0)
+            Margin = new Padding(0, 0, 0, 6)
         };
-        var apply = new Button
-        {
-            Text = "Apply changes",
-            AutoSize = true,
-            Height = 40,
-            BackColor = Color.FromArgb(105, 78, 210),
-            ForeColor = Color.White,
-            FlatStyle = FlatStyle.Flat,
-            Margin = new Padding(8, 0, 0, 0)
-        };
-        apply.FlatAppearance.BorderSize = 0;
-        apply.Click += ApplyChanges;
-
+        _status.ForeColor = _dark ? Color.FromArgb(180, 180, 190) : Color.FromArgb(90, 90, 100);
         footer.Controls.Add(warning, 0, 0);
-        footer.Controls.Add(apply, 1, 0);
         footer.Controls.Add(_status, 0, 1);
-        root.Controls.Add(footer, 0, 3);
+        root.Controls.Add(footer, 0, 2);
         Controls.Add(root);
 
-        _accentButton.Click += ChooseAccent;
         LoadCurrentValues();
         ApplyThemeTo(this);
-        _accentButton.BackColor = _accent;
-        _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
+        UpdateAccentButton();
     }
 
-    private FlowLayoutPanel MakeSection(string title)
+    private Control MakeGroupHeader(string title) => new Label
     {
-        var section = new FlowLayoutPanel
-        {
-            Width = 630,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White,
-            Padding = new Padding(15, 12, 15, 12),
-            Margin = new Padding(0, 0, 0, 14)
-        };
-        var label = new Label
-        {
-            Text = title,
-            AutoSize = true,
-            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
-            ForeColor = _dark ? Color.FromArgb(174, 157, 232) : Color.FromArgb(105, 78, 170),
-            Margin = new Padding(0, 0, 0, 8)
-        };
-        section.Controls.Add(label);
-        return section;
-    }
+        Text = title, AutoSize = true,
+        Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
+        ForeColor = _dark ? Color.FromArgb(174, 157, 232) : Color.FromArgb(105, 78, 170),
+        Margin = new Padding(2, 12, 0, 6)
+    };
 
-    private Control MakeOption(Control control, string description)
+    private Control MakeTweakRow(Tweak tweak)
     {
         var row = new Panel
         {
-            Width = 590,
-            Height = 59,
-            Margin = new Padding(0, 5, 0, 5),
-            BackColor = _dark ? Color.FromArgb(44, 44, 51) : Color.FromArgb(249, 249, 252)
+            Width = 700, Height = 66, Margin = new Padding(0, 0, 0, 7),
+            BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White
         };
-        control.Location = new Point(12, 8);
-        if (control is CheckBox check)
+        var check = new CheckBox
         {
-            check.ForeColor = _dark ? Color.FromArgb(240, 240, 245) : Color.FromArgb(36, 36, 42);
-            check.Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold);
-        }
+            Text = tweak.Title, AutoSize = true, Location = new Point(12, 8),
+            Font = new Font("Segoe UI Semibold", 9.5f, FontStyle.Bold),
+            ForeColor = _dark ? Color.FromArgb(240, 240, 245) : Color.FromArgb(36, 36, 42)
+        };
         var hint = new Label
         {
-            Text = description,
-            AutoSize = true,
-            MaximumSize = new Size(550, 0),
-            Location = new Point(34, 32),
+            Text = tweak.Description, AutoSize = true, MaximumSize = new Size(510, 0),
+            Location = new Point(34, 34),
             ForeColor = _dark ? Color.FromArgb(165, 165, 177) : Color.FromArgb(108, 108, 118),
-            Font = new Font("Segoe UI", 8.5f)
+            Font = new Font("Segoe UI", 8.3f)
         };
-        row.Controls.Add(control);
+        var apply = new Button
+        {
+            Text = "Apply", Width = 76, Height = 30, Anchor = AnchorStyles.Top | AnchorStyles.Right,
+            Location = new Point(610, 17), BackColor = Color.FromArgb(105, 78, 210),
+            ForeColor = Color.White, FlatStyle = FlatStyle.Flat
+        };
+        apply.FlatAppearance.BorderSize = 0;
+        apply.Click += (_, _) => ApplyOne(tweak, check.Checked);
+
+        _checks[tweak] = check;
+        row.Controls.Add(check);
         row.Controls.Add(hint);
+        row.Controls.Add(apply);
         return row;
     }
 
@@ -201,20 +195,17 @@ public sealed class TweaksForm : Form
 
     private void LoadCurrentValues()
     {
-        _darkMode.Checked =
-            ReadDword(Personalize, "AppsUseLightTheme", 1) == 0 &&
-            ReadDword(Personalize, "SystemUsesLightTheme", 1) == 0;
+        foreach (var tweak in _tweaks)
+        {
+            if (tweak.Name == "TaskbarAl" && !IsWindows11()) continue;
+            var current = ReadDword(tweak.Path, tweak.Name, tweak.DisabledValue);
+            _checks[tweak].Checked = current == tweak.EnabledValue;
+        }
 
-        _extensions.Checked = ReadDword(ExplorerAdvanced, "HideFileExt", 1) == 0;
-        _hidden.Checked = ReadDword(ExplorerAdvanced, "Hidden", 2) == 1;
-        _thisPc.Checked = ReadDword(ExplorerAdvanced, "LaunchTo", 2) == 1;
-        _seconds.Checked = ReadDword(ExplorerAdvanced, "ShowSecondsInSystemClock", 0) == 1;
-        _transparency.Checked = ReadDword(Personalize, "EnableTransparency", 1) == 0;
-        _leftTaskbar.Checked = ReadDword(ExplorerAdvanced, "TaskbarAl", 1) == 0;
+        var dark = ReadDword(Personalize, "AppsUseLightTheme", 1) == 0 &&
+                   ReadDword(Personalize, "SystemUsesLightTheme", 1) == 0;
+        _checks[_tweaks[0]].Checked = dark;
         _accent = Color.FromArgb(ReadDword(Dwm, "ColorizationColor", unchecked((int)0xFF694BD2)));
-        _accentButton.BackColor = _accent;
-        _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
-        _accentButton.Text = $"Accent color  •  #{_accent.R:X2}{_accent.G:X2}{_accent.B:X2}";
     }
 
     private int ReadDword(string path, string name, int fallback)
@@ -227,76 +218,90 @@ public sealed class TweaksForm : Form
         catch { return fallback; }
     }
 
-    private void ChooseAccent(object? sender, EventArgs e)
+    private void ApplyOne(Tweak tweak, bool enabled)
     {
-        using var dialog = new ColorDialog { Color = _accent, FullOpen = true, AnyColor = true };
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
-        _accent = dialog.Color;
-        _accentButton.BackColor = _accent;
-        _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
-        _accentButton.Text = $"Accent color  •  #{_accent.R:X2}{_accent.G:X2}{_accent.B:X2}";
-    }
+        if (tweak.Name == "TaskbarAl" && !IsWindows11())
+        {
+            MessageBox.Show(this, "This option is only available on Windows 11.", "Not supported",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
 
-    private void ApplyChanges(object? sender, EventArgs e)
-    {
         if (MessageBox.Show(this,
-            "Apply the selected settings? Backups will be created for values that change.",
-            "Apply Windows tweaks", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+            $"Apply only this setting?\n\n{tweak.Title}\n\nA backup will be saved before changing it.",
+            "Apply one tweak", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
             MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             return;
 
         try
         {
-            var dark = _darkMode.Checked ? 0 : 1;
-            SetIfChanged(Personalize, "AppsUseLightTheme", dark);
-            SetIfChanged(Personalize, "SystemUsesLightTheme", dark);
-            SetIfChanged(Personalize, "EnableTransparency", _transparency.Checked ? 0 : 1);
+            if (tweak.Name == "AppsUseLightTheme")
+            {
+                var value = enabled ? 0 : 1;
+                SetDword(Personalize, "AppsUseLightTheme", value);
+                SetDword(Personalize, "SystemUsesLightTheme", value);
+            }
+            else
+            {
+                SetDword(tweak.Path, tweak.Name, enabled ? tweak.EnabledValue : tweak.DisabledValue);
+            }
 
-            SetIfChanged(ExplorerAdvanced, "HideFileExt", _extensions.Checked ? 0 : 1);
-            SetIfChanged(ExplorerAdvanced, "Hidden", _hidden.Checked ? 1 : 2);
-            SetIfChanged(ExplorerAdvanced, "LaunchTo", _thisPc.Checked ? 1 : 2);
-            SetIfChanged(ExplorerAdvanced, "ShowSecondsInSystemClock", _seconds.Checked ? 1 : 0);
-
-            if (IsWindows11())
-                SetIfChanged(ExplorerAdvanced, "TaskbarAl", _leftTaskbar.Checked ? 0 : 1);
-
-            SetIfChanged(Dwm, "ColorizationColor", _accent.ToArgb());
-            SetIfChanged(Dwm, "ColorPrevalence", 1);
-
-            _status.Text = "Settings applied.";
-            MessageBox.Show(this,
-                "Your settings were applied. Some changes may need File Explorer to restart or Windows to sign out.",
-                "All done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _status.Text = $"Applied: {tweak.Title}";
         }
         catch (Exception ex)
         {
-            _status.Text = "Some settings could not be applied.";
-            MessageBox.Show(this, ex.Message, "Could not apply settings",
+            MessageBox.Show(this, ex.Message, "Could not apply setting",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            _status.Text = "That setting could not be applied.";
+        }
+    }
+
+    private void SetDword(string path, string name, int value)
+    {
+        var current = ReadDword(path, name, int.MinValue);
+        if (current == value) return;
+        _backups.SaveValue(RegistryHive.CurrentUser, path, name);
+        _registry.SetValue(RegistryHive.CurrentUser, path, name, value, RegistryValueKind.DWord);
+    }
+
+    private void ChooseAndApplyAccent(object? sender, EventArgs e)
+    {
+        using var dialog = new ColorDialog { Color = _accent, FullOpen = true, AnyColor = true };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        if (MessageBox.Show(this, "Apply this accent color to Windows?", "Apply accent color",
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            return;
+
+        try
+        {
+            SetDword(Dwm, "ColorizationColor", _accent.ToArgb());
+            SetDword(Dwm, "ColorPrevalence", 1);
+            UpdateAccentButton();
+            _status.Text = "Applied: Accent color";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Could not apply accent color",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
-    private void SetIfChanged(string path, string name, int value)
+    private void UpdateAccentButton()
     {
-        var current = ReadDword(path, name, int.MinValue);
-        if (current == value) return;
-
-        _backups.SaveValue(RegistryHive.CurrentUser, path, name);
-        _registry.SetValue(RegistryHive.CurrentUser, path, name, value, RegistryValueKind.DWord);
+        if (_accentButton is null) return;
+        _accentButton.BackColor = _accent;
+        _accentButton.ForeColor = _accent.GetBrightness() < 0.55f ? Color.White : Color.Black;
+        _accentButton.Text = $"Apply #{_accent.R:X2}{_accent.G:X2}{_accent.B:X2}";
     }
 
     private void ApplyThemeTo(Control parent)
     {
         foreach (Control control in parent.Controls)
         {
-            if (control is Panel)
-                control.BackColor = control.Parent == null || control.Parent == this
-                    ? (_dark ? Color.FromArgb(37, 37, 43) : Color.White)
-                    : (_dark ? Color.FromArgb(44, 44, 51) : Color.FromArgb(249, 249, 252));
-
+            if (control is Panel or FlowLayoutPanel)
+                control.BackColor = _dark ? Color.FromArgb(37, 37, 43) : Color.White;
             if (control is not Button && control is not CheckBox && control is not Label)
                 control.ForeColor = _dark ? Color.FromArgb(238, 238, 243) : Color.FromArgb(35, 35, 42);
-
             ApplyThemeTo(control);
         }
     }
