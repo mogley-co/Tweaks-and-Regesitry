@@ -13,8 +13,6 @@ public sealed class PersonalizationForm : Form
     private readonly Label _status = new() { AutoSize = true };
 
     private const string WallpaperValuePath = @"Control Panel\Desktop";
-    private const string BackgroundMenuPath = @"Software\Classes\Directory\Background\shell\MogleyOpenTerminal";
-    private const string FolderMenuPath = @"Software\Classes\Directory\shell\MogleyOpenTerminal";
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool SystemParametersInfo(uint action, uint parameter, string value, uint flags);
@@ -67,12 +65,6 @@ public sealed class PersonalizationForm : Form
         cards.Controls.Add(MakeCard("Folder icon",
             "Choose a folder and an .ico file. Windows uses a desktop.ini file for that folder; an existing desktop.ini is copied to the app backup folder first.",
             "Change folder icon…", ChangeFolderIcon));
-        cards.Controls.Add(MakeCard("Right-click menu",
-            "Add or remove “Open Terminal here” in File Explorer when right-clicking a folder or empty folder space. This only changes your Windows user profile.",
-            "Add menu item", AddContextMenu));
-        cards.Controls.Add(MakeCard("Right-click menu",
-            "Remove only the “Open Terminal here” entries created by this app. Other context-menu entries are not touched.",
-            "Remove menu item", RemoveContextMenu));
         cards.Controls.Add(MakeCard("Windows desktop icons",
             "Open Windows Themes settings to show or hide This PC, Recycle Bin, Network and your user folder, and customize their system icons.",
             "Open desktop icon settings", OpenDesktopIconSettings));
@@ -191,73 +183,5 @@ public sealed class PersonalizationForm : Form
         }
     }
 
-    private void AddContextMenu(object? sender, EventArgs e)
-    {
-        if (MessageBox.Show(this,
-            "Add “Open Terminal here” to the right-click menu for folders and empty folder space? This creates two entries under your current Windows user account.",
-            "Add context-menu item", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
-            MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
 
-        try
-        {
-            WriteMenuEntry(BackgroundMenuPath);
-            WriteMenuEntry(FolderMenuPath);
-            SHChangeNotify(0x08000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
-            _status.Text = "Added “Open Terminal here” to File Explorer's right-click menu.";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(this, ex.Message, "Could not add menu item", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            _status.Text = "Context-menu update failed.";
-        }
-    }
-
-    private void WriteMenuEntry(string path)
-    {
-        foreach (var name in new[] { "", "MUIVerb", "Icon" })
-            _backups.SaveValue(RegistryHive.CurrentUser, path, name);
-        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\command", "");
-
-        using var root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
-        using var menu = root.CreateSubKey(path, writable: true)
-            ?? throw new UnauthorizedAccessException("Cannot create the context-menu entry.");
-        menu.SetValue("MUIVerb", "Open Terminal here", RegistryValueKind.String);
-        menu.SetValue("Icon", "powershell.exe", RegistryValueKind.String);
-        using var command = menu.CreateSubKey("command", writable: true)
-            ?? throw new UnauthorizedAccessException("Cannot create the context-menu command.");
-        var target = path.Equals(BackgroundMenuPath, StringComparison.OrdinalIgnoreCase) ? "%V" : "%1";
-        command.SetValue("", $"cmd.exe /K pushd \"{target}\"", RegistryValueKind.String);
-    }
-
-    private void RemoveContextMenu(object? sender, EventArgs e)
-    {
-        if (MessageBox.Show(this,
-            "Remove only the two “Open Terminal here” entries created by Tweaks and Registry?",
-            "Remove context-menu item", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
-
-        try
-        {
-            RemoveMenuEntry(BackgroundMenuPath);
-            RemoveMenuEntry(FolderMenuPath);
-            SHChangeNotify(0x08000000, 0x1000, IntPtr.Zero, IntPtr.Zero);
-            _status.Text = "Removed this app's context-menu entries.";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(this, ex.Message, "Could not remove menu item", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            _status.Text = "Context-menu removal failed.";
-        }
-    }
-
-    private void RemoveMenuEntry(string path)
-    {
-        using var root = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Default);
-        using var menu = root.OpenSubKey(path, writable: true);
-        if (menu is null) return;
-        foreach (var name in new[] { "", "MUIVerb", "Icon" })
-            _backups.SaveValue(RegistryHive.CurrentUser, path, name);
-        _backups.SaveValue(RegistryHive.CurrentUser, path + @"\command", "");
-        root.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
-    }
 }
