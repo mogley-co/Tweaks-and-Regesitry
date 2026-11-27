@@ -69,6 +69,23 @@ dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=
 
 Output: `bin\\Release\\net8.0-windows\\win-x64\\publish\\TweaksAndRegistry.exe`
 
+## Windows installer
+
+The repository includes an Inno Setup definition at `installer/TweaksAndRegistry.iss`. GitHub Actions publishes two separate artifacts on each build:
+
+- `Tweaks-and-Registry-installer-win-x64` — the Windows setup executable.
+- `Tweaks-and-Registry-portable-win-x64` — the standalone portable executable.
+
+To compile the installer locally, install Inno Setup 6, publish the app using the command above, then run this from the repository root in PowerShell:
+
+```powershell
+$iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
+$publishDir = (Resolve-Path "bin\\Release\\net8.0-windows\\win-x64\\publish").Path
+& $iscc "/DPublishDir=$publishDir" "installer\\TweaksAndRegistry.iss"
+```
+
+The installer is per-user by default and installs under `%LOCALAPPDATA%\\Programs\\Tweaks and Registry`, so it does not need administrator privileges. It creates a Start Menu shortcut, offers an optional Desktop shortcut, and registers an uninstaller.
+
 ## Limitations
 
 - This is an early utility, not a replacement for Windows Registry Editor.
