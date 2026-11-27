@@ -28,9 +28,32 @@ jobs:
       - name: Publish self-contained x64
         run: dotnet publish --configuration Release --runtime win-x64 --self-contained true /p:PublishSingleFile=true
 
-      - name: Upload executable
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Compile Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            throw "Inno Setup compiler was not found at $iscc"
+          }
+          $publishDir = (Resolve-Path "bin\Release\net8.0-windows\win-x64\publish").Path
+          & $iscc "/DPublishDir=$publishDir" "installer\TweaksAndRegistry.iss"
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload portable executable
         uses: actions/upload-artifact@v4
         with:
-          name: Tweaks-and-Registry-win-x64
+          name: Tweaks-and-Registry-portable-win-x64
           path: bin/Release/net8.0-windows/win-x64/publish/TweaksAndRegistry.exe
+          if-no-files-found: error
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tweaks-and-Registry-installer-win-x64
+          path: installer/Output/TweaksAndRegistry-Setup-x64.exe
           if-no-files-found: error
