@@ -1,97 +1,191 @@
 # Tweaks and Registry
 
-A lightweight Windows 10/11 customization, system information, and registry utility built with C# WinForms.
+**A lightweight Windows utility for registry management, system information, and desktop customization.**
 
-**Status:** Early development  
-**Target:** Windows 10 and Windows 11 (x64)
+Tweaks and Registry brings common Windows configuration tools into one application. It includes searchable tweaks, a registry editor, registry-pack import and export, backups, system inventories, and personalization tools.
 
-## Start here
+> **Project status:** Early development (0.1.0)  
+> **Supported platform:** Windows 10 and Windows 11, 64-bit (x64)  
+> **Technology:** C# · Windows Forms · .NET 8
 
-The app opens to a beginner-friendly home screen:
+## Download
 
-- **Quick Tweaks** — individual Apply buttons or **Apply all** for toggles changed in the current session, with 50+ searchable options across appearance, File Explorer, Start menu, taskbar, privacy, gaming, desktop behavior, notifications, clipboard, and notification-area settings. The Apply all and Export `.regimp` actions stay visible above the list. Apply all changes only toggles you changed during the current session, previews the changes, and backs up each value before writing.
-- **Registry Packs** — import a shared `.regimp` file and inspect every proposed change before applying it.
-- **Advanced Registry Editor** — manual registry browsing and editing.
-- **Backups** — open the folder containing saved value backups.
-- **System Tools** — inspect Windows system information, startup entries, installed applications, running processes, local drive capacity, and network adapters. Each inventory has a direct link to the relevant Windows management page; the Windows Tools tab launches Task Manager, Services, Device Manager, Disk Management, Event Viewer, System Information, Resource Monitor, and common Settings pages.
-- **Personalization** — set a desktop wallpaper, assign a custom `.ico` file to a folder, and open Windows desktop icon settings for This PC/Recycle Bin/Network. Wallpaper and registry changes are backed up; an existing folder `desktop.ini` is copied before it is changed.
+Get the available builds from the [official download page](https://apps.ereyada.com/tweaks-and-reg/download.html).
 
-## System Tools
+| Download | Description |
+| --- | --- |
+| **Windows Installer** | Installs the application in your user profile, creates a Start Menu shortcut, and registers an uninstaller. |
+| **Portable** | A standalone executable that can be run without using the installer. |
 
-System Tools provides read-only inventories and delegates system changes to Windows itself:
+Build artifacts are also available from [GitHub Actions](https://github.com/mogley-co/Tweaks-and-Regesitry/actions). Select a successful workflow run and download the installer or portable artifact. GitHub Actions artifacts are ZIP archives; extract the executable before running or distributing it.
 
-- Startup inventory reads the standard per-user and machine Run keys and Startup folders. Use Windows Startup Apps to enable or disable entries.
-- Installed-app inventory reads standard uninstall registry entries. Use Windows Apps settings or Programs and Features to uninstall software.
-- Process inventory is a snapshot; use Task Manager for process management.
-- Storage and network pages report drive capacity and adapter/IP information without changing configuration.
-- The Windows Tools tab opens built-in Windows consoles and Settings pages. Availability depends on the Windows edition and installed components.
+## Features
 
-The app intentionally does not silently terminate processes, disable services, uninstall applications, or delete files. Those actions can cause data loss or break Windows; use the built-in management tools with their own confirmation prompts.
+### Quick Tweaks
 
-## Registry packs (.regimp)
+Browse more than 50 searchable tweak options covering areas such as appearance, File Explorer, taskbar, privacy, gaming, desktop behavior, notifications, and clipboard settings.
 
-A `.regimp` file is a structured JSON-based Mogley pack, not an executable program and not a raw `.reg` script.
+- Apply a tweak individually.
+- Review and apply toggles changed during the current session with **Apply all**.
+- Export supported managed settings to a .regimp pack.
+- Back up registry values before changes are written.
 
-- Import supports version 1 packs with up to 200 values and a 1 MB file-size limit.
-- Imported entries are restricted to `HKEY_CURRENT_USER\\Software`.
-- Pack import does not support deleting keys or values, running commands, loading DLLs, or writing to machine-wide hives.
-- Every entry is shown in a review screen before applying.
-- A separate `.regbu` backup is saved for each registry value before changes. Older `.json` value backups remain restorable.
-- Quick Tweaks can export its managed current settings across multiple HKCU\\Software keys into one `.regimp` pack.
-- The Advanced Registry Editor can also export the selected HKCU\\Software key as a shareable `.regimp` pack.
+**Apply all does not turn every unchecked option off.** It processes only toggles changed during the current session.
 
-These limits reduce risk but do not guarantee a pack is safe. A malicious or incorrect user-level registry value can still disrupt applications, Windows settings, or your user profile. Only import packs from sources you trust and read the preview carefully.
+### Registry Editor
 
-## Safety
+Browse supported registry hives, navigate keys, search values, and create, edit, or delete registry values. Supported value types include String, ExpandString, Binary, DWORD, QWORD, and MultiString.
 
-- Registry edits can break Windows, applications, sign-in, networking, or device functionality.
-- Backups are helpful but are not a complete system restore and cannot guarantee recovery.
-- The app does not request administrator privileges at startup.
-- Windows permissions still apply.
-- Quick Tweaks can apply one selected option or only the toggles you changed during the current session. Apply all previews the changes and creates every `.regbu` backup before writing any values. If a write fails midway, some changes may already have been applied; restore from the saved backups as needed. Create a Windows restore point before experimenting with important system settings.
-- Some changes need Explorer restart or sign-out. A few legacy or optional registry settings may be ignored by certain Windows builds; unsupported OS-specific options are hidden.
+The editor also supports exporting a selected key as a .reg file and creating or restoring individual value backups.
 
-## Build
+Registry editing is powerful and can affect Windows or installed applications. Review every change carefully.
 
-Install the .NET 8 SDK, then run:
+### Registry Packs
 
-```powershell
+Import and export .regimp packs to share supported user-level registry settings.
+
+- Version 1 packs support up to 200 values and a maximum file size of 1 MB.
+- Imported entries are restricted to HKEY_CURRENT_USER\Software.
+- The app displays proposed changes for review before applying them.
+- A .regbu backup is saved for each value before it is changed.
+- Pack imports do not execute commands or support deleting registry keys or values.
+
+These restrictions reduce the scope of an imported pack; they do **not** guarantee that its contents are safe. Incorrect registry values can still disrupt applications or Windows settings. Only import packs from sources you trust.
+
+### Backups
+
+Create and restore supported registry-value backups. Registry packs also create backups before applying their proposed changes.
+
+Backups are not a full registry, disk, or Windows system image. They cannot guarantee recovery from every problem.
+
+### System Tools
+
+View read-only information about:
+
+- Windows version, build, edition, architecture, and runtime.
+- Startup entries from standard Run registry keys and Startup folders.
+- Installed applications listed in standard uninstall registry locations.
+- Running processes and their memory usage.
+- Local drive capacity and free space.
+- Network adapters and IP information.
+
+The app also provides shortcuts to built-in Windows utilities such as Task Manager, Services, Device Manager, Disk Management, Event Viewer, System Information, and Resource Monitor.
+
+System inventories are informational. Use Windows management interfaces to change startup settings, uninstall applications, or manage processes and services.
+
+### Personalization
+
+- Set the desktop wallpaper.
+- Assign a custom .ico file to a folder.
+- Open Windows desktop icon settings.
+
+The application saves a backup of the wallpaper registry value and copies an existing folder desktop.ini before modifying it.
+
+### Activation Diagnostics
+
+Check Windows activation status and view license details using Windows built-in licensing diagnostics. The app can open the official Windows Activation settings page.
+
+This feature is diagnostic only. It does not activate Windows, provide product keys, or bypass licensing.
+
+## Safety and limitations
+
+Tweaks and Registry is a configuration utility, not a replacement for Windows Settings, Registry Editor, or system recovery tools.
+
+- Registry changes can affect Windows, applications, sign-in, networking, and device behavior.
+- Create a Windows restore point before experimenting with important system settings.
+- Review pack previews and understand changes before applying them.
+- The application does not request administrator privileges at startup. Windows permissions still apply, and some operations may be unavailable without appropriate permissions.
+- Some settings require restarting File Explorer or signing out before their effects appear.
+- Registry behavior can vary between Windows versions and builds. Some legacy or optional settings may be ignored by Windows.
+- If a multi-value operation fails partway through, earlier writes may already have succeeded. Use the created backups to restore supported values if necessary.
+- Backups are not a substitute for a full system backup.
+
+The application intentionally keeps several system-management actions read-only and opens the corresponding Windows tools instead of silently changing or removing system components.
+
+## System requirements
+
+- Windows 10 or Windows 11.
+- 64-bit (x64) Windows.
+- The published installer and portable builds are self-contained; users do not normally need to install the .NET runtime separately.
+
+## Building from source
+
+### Prerequisites
+
+- Windows 10 or Windows 11, x64.
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) if you also want to compile the Windows installer.
+
+### Build and run
+
+From the repository root, open PowerShell:
+
+~~~powershell
 dotnet restore
 dotnet build -c Release
 dotnet run
-```
+~~~
 
-Publish a self-contained single-file x64 executable:
+### Publish the portable executable
 
-```powershell
+~~~powershell
 dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
-```
+~~~
 
-Output: `bin\\Release\\net8.0-windows\\win-x64\\publish\\TweaksAndRegistry.exe`
+The published executable is located at:
 
-## Windows installer
+~~~text
+bin/Release/net8.0-windows/win-x64/publish/TweaksAndRegistry.exe
+~~~
 
-The repository includes an Inno Setup definition at `installer/TweaksAndRegistry.iss`. GitHub Actions publishes two separate artifacts on each build:
+### Build the installer
 
-- `Tweaks-and-Registry-installer-win-x64` — the Windows setup executable.
-- `Tweaks-and-Registry-portable-win-x64` — the standalone portable executable.
+After publishing the application and installing Inno Setup 6, run:
 
-To compile the installer locally, install Inno Setup 6, publish the app using the command above, then run this from the repository root in PowerShell:
+~~~powershell
+$iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+$publishDir = (Resolve-Path "bin\Release\net8.0-windows\win-x64\publish").Path
+& $iscc "/DPublishDir=$publishDir" "installer\TweaksAndRegistry.iss"
+~~~
 
-```powershell
-$iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
-$publishDir = (Resolve-Path "bin\\Release\\net8.0-windows\\win-x64\\publish").Path
-& $iscc "/DPublishDir=$publishDir" "installer\\TweaksAndRegistry.iss"
-```
+The installer output is written to:
 
-The installer is per-user by default and installs under `%LOCALAPPDATA%\\Programs\\Tweaks and Registry`, so it does not need administrator privileges. It creates a Start Menu shortcut, offers an optional Desktop shortcut, and registers an uninstaller.
+~~~text
+installer/Output/TweaksAndRegistry-Setup-x64.exe
+~~~
 
-## Limitations
+The installer uses a per-user installation under %LOCALAPPDATA%\Programs\Tweaks and Registry. It creates a Start Menu shortcut, offers an optional Desktop shortcut, and registers an uninstaller.
 
-- This is an early utility, not a replacement for Windows Registry Editor.
-- Registry availability and behavior can vary between Windows builds.
-- `.regbu` backups cover individual values, not complete registry hives or system state.
+## Continuous integration
+
+The GitHub Actions workflow builds the self-contained x64 application and compiles the installer. Successful runs publish two separate artifacts:
+
+- Tweaks-and-Registry-portable-win-x64
+- Tweaks-and-Registry-installer-win-x64
+
+See [Actions](https://github.com/mogley-co/Tweaks-and-Regesitry/actions) for build history and available artifacts.
+
+## Contributing and reporting issues
+
+Bug reports, reproducible problems, and practical feature suggestions are welcome.
+
+When reporting an issue, include:
+
+- Your Windows edition, version, and build.
+- The application version.
+- The steps needed to reproduce the problem.
+- Any relevant error message or screenshot.
+- Whether the issue occurs with the installer or portable build.
+
+Please do not include passwords, product keys, personal files, or other sensitive information in issue reports.
+
+## Project links
+
+- **Website:** https://apps.ereyada.com/tweaks-and-reg/
+- **Downloads:** https://apps.ereyada.com/tweaks-and-reg/download.html
+- **Source code and issues:** https://github.com/mogley-co/Tweaks-and-Regesitry
+- **Builds:** https://github.com/mogley-co/Tweaks-and-Regesitry/actions
 
 ## License
 
-No license has been selected yet.
+No open-source license has been selected for this repository yet. Until a license is added, the source code is publicly viewable, but no general permission to reuse, modify, or redistribute it is granted.
